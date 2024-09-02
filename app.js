@@ -40,11 +40,13 @@ document.getElementById('searchButton').addEventListener('click', () => {
 
 function parseCSV(data, searchText) {
     console.log('Parsing CSV data...');
-   const lines = data.split(/\r?\n/); // Adjust to handle both \n and \r\n line endings
-
+    
+    // Normalize line breaks and trim any extraneous whitespace
+    const normalizedData = data.replace(/\r\n/g, '\n').trim();
+    const lines = normalizedData.split('\n');
     const results = [];
 
-    console.log(`Total lines in CSV: ${lines.length}`); // Debugging log
+    console.log(`Total lines in CSV after normalization: ${lines.length}`); // Debugging log
 
     for (let i = 1; i < lines.length; i++) { // Start from 1 to skip header
         const columns = lines[i].split(',');
@@ -66,7 +68,7 @@ function parseCSV(data, searchText) {
                 });
             }
         } else {
-            console.log(`Skipping line ${i} due to insufficient columns`); // Debugging log
+            console.log(`Skipping line ${i} due to insufficient columns or malformed data`); // Debugging log
         }
     }
 
