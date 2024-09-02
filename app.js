@@ -5,8 +5,11 @@ document.getElementById('searchButton').addEventListener('click', () => {
         return;
     }
 
-    // Fetch the CSV data from your local proxy server
-    fetch('http://localhost:3000/fetch-csv')
+    // Use an alternative CORS proxy service to fetch the CSV data
+    const csvUrl = 'https://www.dropbox.com/scl/fi/09z657jywgobq8uj4mzdc/lookup_summary.csv?rlkey=8pqn25qptu3fj7t48xflabndh&st=bom7dlvs&dl=1';
+    const proxyUrl = 'https://corsproxy.io/?'; // Alternative CORS proxy
+
+    fetch(proxyUrl + encodeURIComponent(csvUrl))
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok: ' + response.statusText);
