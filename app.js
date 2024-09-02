@@ -1,3 +1,36 @@
+document.getElementById('searchButton').addEventListener('click', () => {
+    const searchText = document.getElementById('searchInput').value.trim();
+    if (!searchText) {
+        displayResult("Please enter a product code or description.");
+        return;
+    }
+
+    // Use an alternative CORS proxy service to fetch the CSV data
+    const csvUrl = 'https://www.dropbox.com/scl/fi/09z657jywgobq8uj4mzdc/lookup_summary.csv?rlkey=8pqn25qptu3fj7t48xflabndh&st=bom7dlvs&dl=1';
+    const proxyUrl = 'https://corsproxy.io/?'; // Alternative CORS proxy
+
+    // Debugging log: Print the full URL being fetched
+    console.log(`Fetching CSV from: ${proxyUrl + encodeURIComponent(csvUrl)}`);
+
+    fetch(proxyUrl + encodeURIComponent(csvUrl))
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok: ' + response.statusText);
+            }
+            return response.text();
+        })
+        .then(data => {
+            // Debugging log: Print the raw CSV data fetched
+            console.log('Raw CSV data fetched successfully:', data);
+
+            parseCSV(data, searchText);
+        })
+        .catch(error => {
+            console.error('Error fetching the CSV file:', error);
+            displayResult('Error fetching the CSV file: ' + error.message);
+        });
+});
+
 function parseCSV(data, searchText) {
     console.log('Parsing CSV data...');
     const lines = data.split('\n');
@@ -13,7 +46,8 @@ function parseCSV(data, searchText) {
             const productDescription = columns[1].trim();
             const stockQuantity = parseInt(columns[9].trim(), 10);
 
-            console.log(`Processing line ${i}:`, { productCode, productDescription, stockQuantity }); // Debugging log
+            // Debugging log: Print each product code and description being processed
+            console.log(`Processing line ${i}:`, { productCode, productDescription, stockQuantity });
 
             if (productCode.includes(searchText.toUpperCase()) || productDescription.toLowerCase().includes(searchText.toLowerCase())) {
                 results.push({
@@ -28,4 +62,25 @@ function parseCSV(data, searchText) {
     }
 
     displayResults(results);
+}
+
+function displayResults(results) {
+    const resultsDiv = document.getElementById('results');
+    resultsDiv.innerHTML = '';
+
+    if (results.length === 0) {
+        resultsDiv.textContent = 'No matching products found.';
+        return;
+    }
+
+    results.forEach(result => {
+        const resultItem = document.createElement('div');
+        resultItem.innerHTML = `<strong>Code:</strong> ${result.productCode}, <strong>Description:</strong> ${result.productDescription}, <strong>Stock:</strong> ${result.stockQuantity}`;
+        resultsDiv.appendChild(resultItem);
+    });
+}
+
+function displayResult(message) {
+    const resultsDiv = document.getElementById('results');
+    resultsDiv.innerHTML = `<p>${message}</p>`;
 }
