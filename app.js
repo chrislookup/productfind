@@ -7,7 +7,7 @@ document.getElementById('searchButton').addEventListener('click', () => {
 
     // Use Thingproxy to fetch the CSV data
     const csvUrl = 'https://www.dropbox.com/scl/fi/09z657jywgobq8uj4mzdc/lookup_summary.csv?rlkey=8pqn25qptu3fj7t48xflabndh&st=bom7dlvs&dl=1';
-    const proxyUrl = 'https://thingproxy.freeboard.io/fetch/'; // New CORS proxy without permission requirements
+    const proxyUrl = 'https://thingproxy.freeboard.io/fetch/'; // CORS proxy without permission requirements
 
     // Debugging log: Print the full URL being fetched
     console.log(`Fetching CSV from: ${proxyUrl + csvUrl}`);
@@ -22,6 +22,13 @@ document.getElementById('searchButton').addEventListener('click', () => {
         .then(data => {
             // Debugging log: Print the raw CSV data fetched
             console.log('Raw CSV data fetched successfully:', data);
+
+            // Check if data is empty or undefined
+            if (!data || data.trim() === '') {
+                console.error('CSV data is empty or not fetched properly.');
+                displayResult('Error: CSV data is empty or not fetched properly.');
+                return;
+            }
 
             parseCSV(data, searchText);
         })
