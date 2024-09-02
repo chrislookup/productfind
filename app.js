@@ -5,14 +5,18 @@ document.getElementById('searchButton').addEventListener('click', () => {
         return;
     }
 
-    // Use Thingproxy to fetch the CSV data
-    const csvUrl = 'https://www.dropbox.com/scl/fi/09z657jywgobq8uj4mzdc/lookup_summary.csv?rlkey=8pqn25qptu3fj7t48xflabndh&st=4oj3i31o&dl=1';
-    const proxyUrl = 'https://thingproxy.freeboard.io/fetch/'; // CORS proxy without permission requirements
+    // Directly fetch the CSV data from Dropbox
+    const csvUrl = 'https://www.dropbox.com/scl/fi/09z657jywgobq8uj4mzdc/lookup_summary.csv?rlkey=8pqn25qptu3fj7t48xflabndh&st=bom7dlvs&dl=1';
 
-    // Debugging log: Print the full URL being fetched
-    console.log(`Fetching CSV from: ${proxyUrl + csvUrl}`);
+    // Debugging log: Print the URL being fetched
+    console.log(`Fetching CSV directly from: ${csvUrl}`);
 
-    fetch(proxyUrl + csvUrl)
+    fetch(csvUrl, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'text/csv', // Set appropriate headers if needed
+        }
+    })
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok: ' + response.statusText);
@@ -23,7 +27,6 @@ document.getElementById('searchButton').addEventListener('click', () => {
             // Debugging log: Print the raw CSV data fetched
             console.log('Raw CSV data fetched successfully:', data);
 
-            // Check if data is empty or undefined
             if (!data || data.trim() === '') {
                 console.error('CSV data is empty or not fetched properly.');
                 displayResult('Error: CSV data is empty or not fetched properly.');
