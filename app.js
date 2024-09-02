@@ -5,10 +5,8 @@ document.getElementById('searchButton').addEventListener('click', () => {
         return;
     }
 
-    const csvUrl = 'https://www.dropbox.com/scl/fi/09z657jywgobq8uj4mzdc/lookup_summary.csv?rlkey=8pqn25qptu3fj7t48xflabndh&st=bom7dlvs&dl=1'; // Updated Dropbox link
-    const proxyUrl = 'https://cors-anywhere.herokuapp.com/'; // Free CORS proxy
-
-    fetch(proxyUrl + csvUrl)
+    // Fetch the CSV data from your local proxy server
+    fetch('http://localhost:3000/fetch-csv')
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok: ' + response.statusText);
