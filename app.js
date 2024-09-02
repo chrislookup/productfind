@@ -5,9 +5,9 @@ document.getElementById('searchButton').addEventListener('click', () => {
         return;
     }
 
-    // Use corsproxy.io to fetch the CSV data
-    const csvUrl = 'https://www.dropbox.com/scl/fi/09z657jywgobq8uj4mzdc/lookup_summary.csv?rlkey=8pqn25qptu3fj7t48xflabndh&st=bom7dlvs&dl=1';
-    const proxyUrl = 'https://corsproxy.io/?'; // New CORS proxy
+    // Use the new Dropbox link to fetch the CSV data
+    const csvUrl = 'https://www.dropbox.com/scl/fi/09z657jywgobq8uj4mzdc/lookup_summary.csv?rlkey=8pqn25qptu3fj7t48xflabndh&st=4oj3i31o&dl=0';
+    const proxyUrl = 'https://api.allorigins.win/raw?url='; // AllOrigins CORS proxy
 
     // Debugging log: Print the full URL being fetched
     console.log(`Fetching CSV from: ${proxyUrl + encodeURIComponent(csvUrl)}`);
