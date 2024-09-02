@@ -40,7 +40,8 @@ document.getElementById('searchButton').addEventListener('click', () => {
 
 function parseCSV(data, searchText) {
     console.log('Parsing CSV data...');
-    const lines = data.split('\n');
+   const lines = data.split(/\r?\n/); // Adjust to handle both \n and \r\n line endings
+
     const results = [];
 
     console.log(`Total lines in CSV: ${lines.length}`); // Debugging log
