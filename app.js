@@ -10,7 +10,8 @@ document.getElementById('searchButton').addEventListener('click', () => {
     const targetUrl = 'https://www.dropbox.com/scl/fi/09z657jywgobq8uj4mzdc/lookup_summary.csv?rlkey=8pqn25qptu3fj7t48xflabndh&st=4oj3i31o&dl=1';
     const proxyUrl = `https://api.crawlbase.com/?token=${apiToken}&url=${encodeURIComponent(targetUrl)}`;
 
-    alert(`Fetching CSV from: ${proxyUrl}`); // Alert to see the full URL being fetched
+    // Debugging log: Print the full URL being fetched
+    console.log(`Fetching CSV from: ${proxyUrl}`);
 
     fetch(proxyUrl)
         .then(response => {
@@ -20,11 +21,10 @@ document.getElementById('searchButton').addEventListener('click', () => {
             return response.text();
         })
         .then(data => {
-            alert('Raw CSV data fetched successfully'); // Alert for successful fetch
             console.log('Raw CSV data fetched successfully:', data);
 
             if (!data || data.trim() === '') {
-                alert('Error: CSV data is empty or not fetched properly.');
+                console.error('Error: CSV data is empty or not fetched properly.');
                 displayResult('Error: CSV data is empty or not fetched properly.');
                 return;
             }
@@ -32,7 +32,6 @@ document.getElementById('searchButton').addEventListener('click', () => {
             parseCSV(data, searchText);
         })
         .catch(error => {
-            alert('Error fetching the CSV file: ' + error.message);
             console.error('Error fetching the CSV file:', error);
             displayResult('Error fetching the CSV file: ' + error.message);
         });
@@ -42,7 +41,7 @@ function parseCSV(data, searchText) {
     console.log('Parsing CSV data...');
     
     // Normalize line breaks and trim any extraneous whitespace
-    const normalizedData = data.replace(/\r\n/g, '\n').trim();
+    const normalizedData = data.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim();
     const lines = normalizedData.split('\n');
     const results = [];
 
@@ -60,38 +59,5 @@ function parseCSV(data, searchText) {
 
             console.log(`Processing line ${i}:`, { productCode, productDescription, stockQuantity });
 
-            if (productCode.includes(searchText.toUpperCase()) || productDescription.toLowerCase().includes(searchText.toLowerCase())) {
-                results.push({
-                    productCode,
-                    productDescription,
-                    stockQuantity
-                });
-            }
-        } else {
-            console.log(`Skipping line ${i} due to insufficient columns or malformed data`); // Debugging log
-        }
-    }
-
-    displayResults(results);
-}
-
-function displayResults(results) {
-    const resultsDiv = document.getElementById('results');
-    resultsDiv.innerHTML = '';
-
-    if (results.length === 0) {
-        resultsDiv.textContent = 'No matching products found.';
-        return;
-    }
-
-    results.forEach(result => {
-        const resultItem = document.createElement('div');
-        resultItem.innerHTML = `<strong>Code:</strong> ${result.productCode}, <strong>Description:</strong> ${result.productDescription}, <strong>Stock:</strong> ${result.stockQuantity}`;
-        resultsDiv.appendChild(resultItem);
-    });
-}
-
-function displayResult(message) {
-    const resultsDiv = document.getElementById('results');
-    resultsDiv.innerHTML = `<p>${message}</p>`;
-}
+            if (
+                productCod
