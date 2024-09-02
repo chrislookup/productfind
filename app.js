@@ -5,14 +5,14 @@ document.getElementById('searchButton').addEventListener('click', () => {
         return;
     }
 
-    // Use the new Dropbox link to fetch the CSV data
+    // Use the new Dropbox link with CORS Anywhere proxy
     const csvUrl = 'https://www.dropbox.com/scl/fi/09z657jywgobq8uj4mzdc/lookup_summary.csv?rlkey=8pqn25qptu3fj7t48xflabndh&st=4oj3i31o&dl=0';
-    const proxyUrl = 'https://api.allorigins.win/raw?url='; // AllOrigins CORS proxy
+    const proxyUrl = 'https://cors-anywhere.herokuapp.com/'; // CORS Anywhere proxy
 
     // Debugging log: Print the full URL being fetched
-    console.log(`Fetching CSV from: ${proxyUrl + encodeURIComponent(csvUrl)}`);
+    console.log(`Fetching CSV from: ${proxyUrl + csvUrl}`);
 
-    fetch(proxyUrl + encodeURIComponent(csvUrl))
+    fetch(proxyUrl + csvUrl)
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok: ' + response.statusText);
