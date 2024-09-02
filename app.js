@@ -5,14 +5,15 @@ document.getElementById('searchButton').addEventListener('click', () => {
         return;
     }
 
-    // Use the new Dropbox link with CORS Anywhere proxy
-    const csvUrl = 'https://www.dropbox.com/scl/fi/09z657jywgobq8uj4mzdc/lookup_summary.csv?rlkey=8pqn25qptu3fj7t48xflabndh&st=4oj3i31o&dl=1';
-    const proxyUrl = 'https://cors-anywhere.herokuapp.com/'; // CORS Anywhere proxy
+    // Use Crawlbase (ProxyCrawl) API with your token and desired URL
+    const apiToken = 'qwxaQv_nAYbwy-sYSYRmcA'; // Replace with your Crawlbase API token
+    const targetUrl = 'https://www.dropbox.com/scl/fi/09z657jywgobq8uj4mzdc/lookup_summary.csv?rlkey=8pqn25qptu3fj7t48xflabndh&st=4oj3i31o&dl=1';
+    const proxyUrl = `https://api.crawlbase.com/?token=${apiToken}&url=${encodeURIComponent(targetUrl)}`;
 
     // Debugging log: Print the full URL being fetched
-    console.log(`Fetching CSV from: ${proxyUrl + csvUrl}`);
+    console.log(`Fetching CSV from: ${proxyUrl}`);
 
-    fetch(proxyUrl + csvUrl)
+    fetch(proxyUrl)
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok: ' + response.statusText);
