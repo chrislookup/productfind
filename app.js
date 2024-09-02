@@ -48,6 +48,8 @@ function parseCSV(data, searchText) {
     for (let i = 1; i < lines.length; i++) { // Start from 1 to skip header
         const columns = lines[i].split(',');
 
+        console.log(`Line ${i}: ${lines[i]}`); // Log the full line to debug line breaks
+
         if (columns.length > 9) { // Ensure there are enough columns
             const productCode = columns[0].trim().toUpperCase();
             const productDescription = columns[1].trim();
