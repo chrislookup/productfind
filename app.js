@@ -5,14 +5,18 @@ document.getElementById('searchButton').addEventListener('click', () => {
         return;
     }
 
-    // Use Crawlbase (ProxyCrawl) API with your token and desired URL
-    const apiToken = 'qwxaQv_nAYbwy-sYSYRmcA'; // Replace with your Crawlbase API token
-    const targetUrl = 'https://www.dropbox.com/scl/fi/09z657jywgobq8uj4mzdc/lookup_summary.csv?rlkey=8pqn25qptu3fj7t48xflabndh&st=4oj3i31o&dl=1';
-    const proxyUrl = `https://api.crawlbase.com/?token=${apiToken}&url=${encodeURIComponent(targetUrl)}`;
+    // Directly fetch the CSV data from Dropbox
+    const csvUrl = 'https://www.dropbox.com/scl/fi/09z657jywgobq8uj4mzdc/lookup_summary.csv?rlkey=8pqn25qptu3fj7t48xflabndh&st=bom7dlvs&dl=1';
 
-    alert(`Fetching CSV from: ${proxyUrl}`); // Alert to see the full URL being fetched
+    // Debugging log: Print the URL being fetched
+    console.log(`Fetching CSV directly from: ${csvUrl}`);
 
-    fetch(proxyUrl)
+    fetch(csvUrl, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'text/csv', // Set appropriate headers if needed
+        }
+    })
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok: ' + response.statusText);
@@ -20,11 +24,11 @@ document.getElementById('searchButton').addEventListener('click', () => {
             return response.text();
         })
         .then(data => {
-            alert('Raw CSV data fetched successfully'); // Alert for successful fetch
+            // Debugging log: Print the raw CSV data fetched
             console.log('Raw CSV data fetched successfully:', data);
 
             if (!data || data.trim() === '') {
-                alert('Error: CSV data is empty or not fetched properly.');
+                console.error('CSV data is empty or not fetched properly.');
                 displayResult('Error: CSV data is empty or not fetched properly.');
                 return;
             }
@@ -32,7 +36,6 @@ document.getElementById('searchButton').addEventListener('click', () => {
             parseCSV(data, searchText);
         })
         .catch(error => {
-            alert('Error fetching the CSV file: ' + error.message);
             console.error('Error fetching the CSV file:', error);
             displayResult('Error fetching the CSV file: ' + error.message);
         });
@@ -48,13 +51,12 @@ function parseCSV(data, searchText) {
     for (let i = 1; i < lines.length; i++) { // Start from 1 to skip header
         const columns = lines[i].split(',');
 
-        console.log(`Line ${i}: ${lines[i]}`); // Log the full line to debug line breaks
-
         if (columns.length > 9) { // Ensure there are enough columns
             const productCode = columns[0].trim().toUpperCase();
             const productDescription = columns[1].trim();
             const stockQuantity = parseInt(columns[9].trim(), 10);
 
+            // Debugging log: Print each product code and description being processed
             console.log(`Processing line ${i}:`, { productCode, productDescription, stockQuantity });
 
             if (productCode.includes(searchText.toUpperCase()) || productDescription.toLowerCase().includes(searchText.toLowerCase())) {
