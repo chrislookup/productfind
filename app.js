@@ -5,18 +5,14 @@ document.getElementById('searchButton').addEventListener('click', () => {
         return;
     }
 
-    // Directly fetch the CSV data from Dropbox
+    // Use corsproxy.io to fetch the CSV data
     const csvUrl = 'https://www.dropbox.com/scl/fi/09z657jywgobq8uj4mzdc/lookup_summary.csv?rlkey=8pqn25qptu3fj7t48xflabndh&st=bom7dlvs&dl=1';
+    const proxyUrl = 'https://corsproxy.io/?'; // New CORS proxy
 
-    // Debugging log: Print the URL being fetched
-    console.log(`Fetching CSV directly from: ${csvUrl}`);
+    // Debugging log: Print the full URL being fetched
+    console.log(`Fetching CSV from: ${proxyUrl + encodeURIComponent(csvUrl)}`);
 
-    fetch(csvUrl, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'text/csv', // Set appropriate headers if needed
-        }
-    })
+    fetch(proxyUrl + encodeURIComponent(csvUrl))
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok: ' + response.statusText);
