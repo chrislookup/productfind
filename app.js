@@ -1,5 +1,4 @@
-
- document.getElementById('searchButton').addEventListener('click', () => {
+document.getElementById('searchButton').addEventListener('click', () => {
             const searchText = document.getElementById('searchInput').value.trim();
             if (!searchText) {
                 displayResult("Please enter a product code or description.");
@@ -11,6 +10,7 @@
             const targetUrl = 'https://www.dropbox.com/scl/fi/09z657jywgobq8uj4mzdc/lookup_summary.csv?rlkey=8pqn25qptu3fj7t48xflabndh&dl=1';
             const proxyUrl = `https://api.scraperapi.com/?api_key=${apiToken}&url=${encodeURIComponent(targetUrl)}`;
 
+            // Debugging log: Print the full URL being fetched
             console.log(`Fetching CSV from: ${proxyUrl}`);
 
             fetch(proxyUrl)
@@ -39,18 +39,18 @@
 
         function parseCSV(data, searchText) {
             console.log('Parsing CSV data...');
-
+            
             // Normalize line breaks and trim any extraneous whitespace
             const normalizedData = data.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim();
             const lines = normalizedData.split('\n');
             const results = [];
 
-            console.log(`Total lines in CSV after normalization: ${lines.length}`);
+            console.log(`Total lines in CSV after normalization: ${lines.length}`); // Debugging log
 
             for (let i = 1; i < lines.length; i++) { // Start from 1 to skip header
                 const columns = lines[i].split(',');
 
-                console.log(`Line ${i}: ${lines[i]}`);
+                console.log(`Line ${i}: ${lines[i]}`); // Log the full line to debug line breaks
 
                 if (columns.length > 9) { // Ensure there are enough columns
                     const productCode = columns[0].trim().toUpperCase();
@@ -70,7 +70,7 @@
                         });
                     }
                 } else {
-                    console.log(`Skipping line ${i} due to insufficient columns or malformed data`);
+                    console.log(`Skipping line ${i} due to insufficient columns or malformed data`); // Debugging log
                 }
             }
 
