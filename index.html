@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Nuway Product Lookup</title>
+  <title>Stone & Outdoor — Product Lookup</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.5.3/papaparse.min.js"></script>
   <style>
@@ -16,7 +16,7 @@
 <body class="bg-slate-50 text-slate-800">
   <div class="max-w-6xl mx-auto p-6 space-y-6">
     <div class="flex items-center justify-between gap-4">
-      <h1 class="text-2xl font-semibold">Nuway Product Lookup</h1>
+      <h1 class="text-2xl font-semibold flex items-center gap-3"><img src="logo.png" alt="Stone & Outdoor" class="h-8 w-auto hidden sm:block"/><span>Stone & Outdoor — Product Lookup</span></h1>
       <span class="badge">Live from Dropbox</span>
     </div>
 
@@ -185,6 +185,13 @@
         resultsEl.appendChild(tr);
       }
       statusEl.textContent = `${list.length.toLocaleString()} match(es)`;
+    }</td>
+          <td class="px-4 py-2">${r[cols.name]??''}</td>
+          <td class="px-4 py-2 text-right tabular-nums">${Number.isFinite(r.__stock)? r.__stock.toLocaleString(): ''}</td>
+          <td class="px-4 py-2 text-right tabular-nums">${money(r.__price)}</td>`;
+        resultsEl.appendChild(tr);
+      }
+      statusEl.textContent = `${list.length.toLocaleString()} match(es)`;
     }
 
     async function load(){
@@ -212,12 +219,25 @@
 
     // events
     let t=null;
-    searchEl.addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(()=>{ render(query(searchEl.value)); }, 120); });
-    limitEl.addEventListener('change', ()=> render(query(searchEl.value)) );
-    allToggle.addEventListener('change', ()=> render(query(searchEl.value)) );
+    searchEl.addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(()=>{ updateView(); }, 120); });
+    limitEl.addEventListener('change', ()=> updateView() );
+    allToggle.addEventListener('change', ()=> updateView() );
 
     for (const [sel, key] of [[selCode,'code'], [selName,'name'], [selStock,'stock'], [selPrice,'price']]){
       sel.addEventListener('change', ()=>{ cols[key] = sel.value || null; saveMapping(); buildIndex(rows); render(query(searchEl.value)); });
+    }
+
+    function baseList(){
+      const q = searchEl.value.trim();
+      if(q===''){
+        // Default: only non-zero stock when no search
+        return rows.filter(r => Number.isFinite(r.__stock) && r.__stock > 0);
+      }
+      return query(q);
+    }
+
+    function updateView(){
+      render(baseList());
     }
 
     load();
