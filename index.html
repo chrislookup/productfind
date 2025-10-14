@@ -3,357 +3,84 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>CSV Product Lookup</title>
-  <meta name="description" content="Search a Dropbox‑hosted CSV for SKU/name and display stock & value." />
-  <!-- Tailwind (CDN) -->
+  <title>Nuway Product Lookup</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- PapaParse (CSV parser) -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.5.3/papaparse.min.js"></script>
-  <!-- Fuse.js (optional fuzzy search) -->
-  <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
   <style>
-    /* Small polish */
-    .card { @apply bg-white shadow-sm rounded-2xl border border-slate-200; }
-    .shimmer { background: linear-gradient(90deg, rgba(226,232,240,0.2) 25%, rgba(226,232,240,0.6) 37%, rgba(226,232,240,0.2) 63%); animation: shimmer 1.4s infinite; background-size: 400% 100%; }
-    @keyframes shimmer { 0%{background-position: 100% 0} 100%{background-position: -100% 0} }
+    body { font-family: system-ui, sans-serif; }
+    .loading { animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%,100% {opacity:.4} 50%{opacity:1} }
   </style>
 </head>
-<body class="min-h-screen bg-slate-50 text-slate-800">
-  <header class="p-5">
-    <div class="max-w-6xl mx-auto flex items-center justify-between">
-      <h1 class="text-2xl font-semibold">Product Lookup</h1>
-      <a href="https://chrislookup.github.io/productfind/" class="text-xs underline text-slate-500">Home</a>
+<body class="bg-slate-50 text-slate-800">
+  <div class="max-w-4xl mx-auto p-6">
+    <h1 class="text-2xl font-semibold mb-4">Nuway Product Lookup</h1>
+    <p class="text-sm text-slate-600 mb-4">Automatically connected to your Dropbox file. It updates daily — just search below.</p>
+
+    <div class="mb-4">
+      <input id="search" type="text" placeholder="Search by product name or code..." class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500">
     </div>
-  </header>
+    <div id="status" class="text-sm text-slate-600 mb-4">Loading latest data...</div>
 
-  <main class="max-w-6xl mx-auto p-5 grid gap-6">
-    <!-- Data source + settings -->
-    <section class="card p-5">
-      <div class="flex flex-col md:flex-row md:items-end gap-3">
-        <div class="grow">
-          <label class="block text-sm font-medium mb-1" for="dropboxUrl">Dropbox shared link to CSV</label>
-          <input id="dropboxUrl" type="url" value="https://www.dropbox.com/scl/fi/azkwfwj60sx2vqayrmww0/lookup_summary.csv?rlkey=gn4chbyoewcb75fltvo8r4u4e&st=xghgd182&dl=0" placeholder="e.g. https://www.dropbox.com/s/XXXX/products.csv?dl=0" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500" />
-          <p class="text-xs text-slate-500 mt-1">Paste the <em>shared link</em>. This tool will auto-convert it to a direct, CORS-friendly download (dl=1 / dl.dropboxusercontent.com).</p>
-        </div>
-        <button id="loadBtn" class="px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50">Load CSV</button>
-        <button id="resetBtn" class="px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300">Reset</button>
-      </div>
-
-      <!-- Mapping controls (shown after load) -->
-      <div id="mapping" class="hidden mt-4 grid grid-cols-1 md:grid-cols-4 gap-3">
-        <div>
-          <label class="block text-sm font-medium mb-1" for="fieldSku">SKU/Code column</label>
-          <select id="fieldSku" class="w-full rounded-xl border-slate-300"></select>
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1" for="fieldName">Name/Desc column</label>
-          <select id="fieldName" class="w-full rounded-xl border-slate-300"></select>
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1" for="fieldStock">Stock/Qty column</label>
-          <select id="fieldStock" class="w-full rounded-xl border-slate-300"></select>
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1" for="fieldPrice">Price column (optional)</label>
-          <select id="fieldPrice" class="w-full rounded-xl border-slate-300"></select>
-        </div>
-      </div>
-
-      <div id="loadMsg" class="hidden mt-3 text-sm"></div>
-    </section>
-
-    <!-- Search -->
-    <section class="card p-5">
-      <div class="flex flex-col md:flex-row md:items-center gap-3">
-        <input id="searchInput" type="text" placeholder="Search by SKU or Name..." class="grow rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500" disabled />
-        <label class="flex items-center gap-2 text-sm text-slate-600"><input id="fuzzy" type="checkbox" class="rounded" /> Fuzzy</label>
-        <label class="flex items-center gap-2 text-sm text-slate-600"><input id="showZero" type="checkbox" class="rounded" /> Show zero stock</label>
-        <select id="pageSize" class="rounded-xl border-slate-300">
-          <option>25</option><option selected>50</option><option>100</option>
-        </select>
-      </div>
-    </section>
-
-    <!-- Results -->
-    <section class="card p-0 overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="min-w-full text-sm">
-          <thead class="bg-slate-100 text-slate-600">
-            <tr>
-              <th class="text-left px-4 py-2">SKU</th>
-              <th class="text-left px-4 py-2">Name</th>
-              <th class="text-right px-4 py-2">Stock</th>
-              <th class="text-right px-4 py-2">Price</th>
-              <th class="text-right px-4 py-2">Value</th>
-            </tr>
-          </thead>
-          <tbody id="results"></tbody>
-        </table>
-      </div>
-      <div class="flex items-center justify-between p-4 border-t border-slate-200 text-sm">
-        <div id="countLabel" class="text-slate-600">—</div>
-        <div class="flex items-center gap-2">
-          <button id="prevBtn" class="px-3 py-1 rounded-lg bg-slate-200 disabled:opacity-50">Prev</button>
-          <span id="pageLabel" class="tabular-nums text-slate-600">– / –</span>
-          <button id="nextBtn" class="px-3 py-1 rounded-lg bg-slate-200 disabled:opacity-50">Next</button>
-        </div>
-      </div>
-    </section>
-
-    <footer class="text-center text-xs text-slate-400 py-8">
-      Built for a Dropbox CSV. All client‑side. No server.
-    </footer>
-  </main>
+    <table class="min-w-full bg-white shadow rounded-lg overflow-hidden">
+      <thead class="bg-slate-100 text-slate-600">
+        <tr>
+          <th class="text-left px-4 py-2">Code</th>
+          <th class="text-left px-4 py-2">Name</th>
+          <th class="text-right px-4 py-2">Stock</th>
+          <th class="text-right px-4 py-2">Price</th>
+        </tr>
+      </thead>
+      <tbody id="results"></tbody>
+    </table>
+  </div>
 
   <script>
-    // --- Utilities ---------------------------------------------------------
-    const $ = (id) => document.getElementById(id);
-    const fmtNum = (n) => (Number.isFinite(n) ? n.toLocaleString() : "");
-    const fmtMoney = (n) => (Number.isFinite(n) ? new Intl.NumberFormat(undefined, { style: 'currency', currency: 'AUD' }).format(n) : "");
+    const dropboxUrl = "https://dl.dropboxusercontent.com/scl/fi/azkwfwj60sx2vqayrmww0/lookup_summary.csv?rlkey=gn4chbyoewcb75fltvo8r4u4e&dl=1";
+    const status = document.getElementById('status');
+    const results = document.getElementById('results');
+    const search = document.getElementById('search');
+    let data = [];
 
-    function toDirectDropboxUrl(sharedUrl) {
-      if (!sharedUrl) return "";
+    async function loadData() {
       try {
-        const u = new URL(sharedUrl.trim());
-        // Accept both www.dropbox.com and dl.dropboxusercontent.com
-        if (u.hostname.includes('dropbox.com')) {
-          // If it's a normal share link, force direct download
-          // Example: https://www.dropbox.com/s/ID/file.csv?dl=0  -> dl=1
-          u.searchParams.set('dl', '1');
-          // Also support content host to avoid some preview redirects
-          if (u.hostname === 'www.dropbox.com' || u.hostname === 'dropbox.com') {
-            u.hostname = 'dl.dropboxusercontent.com';
-          }
-          return u.toString();
-        }
-        return sharedUrl;
+        status.textContent = 'Fetching data...';
+        const res = await fetch(dropboxUrl);
+        if (!res.ok) throw new Error('Network error');
+        const text = await res.text();
+        const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
+        data = parsed.data;
+        status.textContent = `Loaded ${data.length.toLocaleString()} products.`;
+        render(data);
       } catch (e) {
-        return sharedUrl;
+        console.error(e);
+        status.textContent = '⚠️ Could not load CSV. Please check the Dropbox link permissions.';
       }
     }
 
-    function bestGuessMapping(headers) {
-      const find = (cands) => headers.find(h => cands.includes(h.toLowerCase()));
-      const lower = headers.map(h => h.toLowerCase());
-      const sku = find(['sku','code','product code','item','itemcode','item code','part','productid','product id']);
-      const name = find(['name','description','product','product name','item name']);
-      const stock = find(['stock','qty','quantity','on hand','onhand','soh','available']);
-      const price = find(['price','sell','sell price','sellprice','cost','unit price','unitprice']);
-      return {
-        sku: sku ?? headers[0],
-        name: name ?? headers[1] ?? headers[0],
-        stock: stock ?? headers.find(h=>h!==sku && h!==name) ?? headers[0],
-        price: price ?? null,
-      };
-    }
-
-    // --- State -------------------------------------------------------------
-    let rows = [];          // raw objects from CSV
-    let headers = [];
-    let mapping = { sku:null, name:null, stock:null, price:null };
-    let fuse = null;        // Fuse instance for fuzzy search
-    let page = 1;           // current page
-
-    // --- DOM refs ----------------------------------------------------------
-    const urlInput = $('dropboxUrl');
-    const loadBtn = $('loadBtn');
-    const resetBtn = $('resetBtn');
-    const loadMsg = $('loadMsg');
-
-    const fieldSku = $('fieldSku');
-    const fieldName = $('fieldName');
-    const fieldStock = $('fieldStock');
-    const fieldPrice = $('fieldPrice');
-
-    const mappingBox = $('mapping');
-
-    const searchInput = $('searchInput');
-    const fuzzyChk = $('fuzzy');
-    const showZeroChk = $('showZero');
-    const pageSizeSel = $('pageSize');
-
-    const resultsBody = $('results');
-    const countLabel = $('countLabel');
-    const pageLabel = $('pageLabel');
-    const prevBtn = $('prevBtn');
-    const nextBtn = $('nextBtn');
-
-    // --- Persist URL/mapping in localStorage ------------------------------
-    const LSKEY = 'productfind:v2';
-    function saveState() {
-      const st = { url: urlInput.value.trim(), mapping };
-      localStorage.setItem(LSKEY, JSON.stringify(st));
-    }
-    function loadState() {
-      try {
-        const st = JSON.parse(localStorage.getItem(LSKEY) || '{}');
-        if (st.url) urlInput.value = st.url;
-        if (st.mapping) mapping = st.mapping;
-      } catch {}
-    }
-    loadState();
-
-    // --- CSV load ----------------------------------------------------------
-    async function loadCsv() {
-      const sharedUrl = urlInput.value.trim();
-      if (!sharedUrl) {
-        alert('Paste a Dropbox shared link to a CSV first.');
-        return;
-      }
-      const direct = toDirectDropboxUrl(sharedUrl);
-
-      loadBtn.disabled = true;
-      searchInput.disabled = true;
-      loadMsg.classList.remove('hidden');
-      loadMsg.classList.add('text-slate-600');
-      loadMsg.innerText = 'Fetching & parsing…';
-
-      try {
-        const res = await fetch(direct, { mode: 'cors' });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const txt = await res.text();
-        const parsed = Papa.parse(txt, { header: true, skipEmptyLines: true, dynamicTyping: true });
-        if (parsed.errors?.length) {
-          console.warn(parsed.errors);
-        }
-        rows = parsed.data;
-        headers = parsed.meta.fields || Object.keys(rows[0] || {});
-
-        // Build mapping selects
-        for (const sel of [fieldSku, fieldName, fieldStock, fieldPrice]) {
-          sel.innerHTML = '<option value="">—</option>' + headers.map(h=>`<option>${h}</option>`).join('');
-        }
-        const guessed = bestGuessMapping(headers);
-        mapping = { ...mapping, ...guessed };
-        fieldSku.value = mapping.sku || '';
-        fieldName.value = mapping.name || '';
-        fieldStock.value = mapping.stock || '';
-        fieldPrice.value = mapping.price || '';
-        mappingBox.classList.remove('hidden');
-
-        // Init Fuse for fuzzy search across name + sku
-        fuse = new Fuse(rows, {
-          includeScore: true,
-          threshold: 0.3,
-          ignoreLocation: true,
-          keys: [r => r[mapping.name] ?? '', r => r[mapping.sku] ?? '']
-        });
-
-        searchInput.disabled = false;
-        loadMsg.classList.remove('text-slate-600');
-        loadMsg.classList.add('text-emerald-700');
-        loadMsg.innerText = `Loaded ${rows.length.toLocaleString()} rows.`;
-        page = 1;
-        saveState();
-        render();
-      } catch (err) {
-        console.error(err);
-        loadMsg.classList.remove('text-slate-600');
-        loadMsg.classList.add('text-red-700');
-        loadMsg.innerText = 'Failed to fetch CSV. Check the link (must be a shared link) and that the file is CSV. If it\'s an .xlsx, export CSV or we can add XLSX support.';
-      } finally {
-        loadBtn.disabled = false;
-      }
-    }
-
-    loadBtn.addEventListener('click', loadCsv);
-    resetBtn.addEventListener('click', () => {
-      localStorage.removeItem(LSKEY);
-      location.reload();
-    });
-
-    for (const el of [fieldSku, fieldName, fieldStock, fieldPrice]) {
-      el.addEventListener('change', () => {
-        mapping.sku = fieldSku.value || null;
-        mapping.name = fieldName.value || null;
-        mapping.stock = fieldStock.value || null;
-        mapping.price = fieldPrice.value || null;
-        saveState();
-        // Rebuild Fuse with new keys
-        if (rows.length) {
-          fuse = new Fuse(rows, {
-            includeScore: true,
-            threshold: 0.3,
-            ignoreLocation: true,
-            keys: [r => r[mapping.name] ?? '', r => r[mapping.sku] ?? '']
-          });
-        }
-        page = 1; render();
-      });
-    }
-
-    // --- Search + pagination ----------------------------------------------
-    let debounceTimer = null;
-    searchInput.addEventListener('input', () => {
-      clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => { page = 1; render(); }, 200);
-    });
-    fuzzyChk.addEventListener('change', () => { page = 1; render(); });
-    showZeroChk.addEventListener('change', () => { page = 1; render(); });
-    pageSizeSel.addEventListener('change', () => { page = 1; render(); });
-
-    prevBtn.addEventListener('click', () => { if (page>1){ page--; render(); }});
-    nextBtn.addEventListener('click', () => { page++; render(); });
-
-    function filteredRows() {
-      const q = searchInput.value.trim();
-      let out = rows;
-      if (q) {
-        if (fuzzyChk.checked && fuse) {
-          out = fuse.search(q).map(r => r.item);
-        } else {
-          const ql = q.toLowerCase();
-          out = rows.filter(r => {
-            const s1 = (r[mapping.sku] + '').toLowerCase();
-            const s2 = (r[mapping.name] + '').toLowerCase();
-            return s1.includes(ql) || s2.includes(ql);
-          });
-        }
-      }
-      if (!showZeroChk.checked && mapping.stock) {
-        out = out.filter(r => Number(r[mapping.stock]) > 0);
-      }
-      return out;
-    }
-
-    function render() {
-      const data = filteredRows();
-      const pageSize = parseInt(pageSizeSel.value, 10);
-      const totalPages = Math.max(1, Math.ceil(data.length / pageSize));
-      if (page > totalPages) page = totalPages;
-      const start = (page - 1) * pageSize;
-      const pageRows = data.slice(start, start + pageSize);
-
-      resultsBody.innerHTML = '';
-      for (const r of pageRows) {
-        const sku = r[mapping.sku] ?? '';
-        const name = r[mapping.name] ?? '';
-        const stock = Number(r[mapping.stock]);
-        const price = mapping.price ? Number(r[mapping.price]) : NaN;
-        const value = (Number.isFinite(stock) && Number.isFinite(price)) ? stock * price : NaN;
+    function render(rows) {
+      results.innerHTML = '';
+      for (const row of rows) {
         const tr = document.createElement('tr');
         tr.className = 'odd:bg-white even:bg-slate-50';
         tr.innerHTML = `
-          <td class="px-4 py-2 whitespace-nowrap">${sku}</td>
-          <td class="px-4 py-2">${name}</td>
-          <td class="px-4 py-2 text-right tabular-nums">${fmtNum(stock)}</td>
-          <td class="px-4 py-2 text-right tabular-nums">${fmtMoney(price)}</td>
-          <td class="px-4 py-2 text-right font-medium tabular-nums">${fmtMoney(value)}</td>
-        `;
-        resultsBody.appendChild(tr);
+          <td class='px-4 py-2'>${row.SKU || row.Code || ''}</td>
+          <td class='px-4 py-2'>${row.Name || row.Product || ''}</td>
+          <td class='px-4 py-2 text-right'>${row.Stock || row.Qty || ''}</td>
+          <td class='px-4 py-2 text-right'>${row.Price || ''}</td>`;
+        results.appendChild(tr);
       }
-
-      countLabel.textContent = `${fmtNum(data.length)} matching row(s)`;
-      pageLabel.textContent = `${fmtNum(page)} / ${fmtNum(totalPages)}`;
-      prevBtn.disabled = page <= 1;
-      nextBtn.disabled = page >= totalPages;
     }
 
-    // Auto-render if state present (user returns)
-    if (urlInput.value) {
-      // Try to load automatically, but don\'t block UI
-      setTimeout(() => { loadCsv(); }, 0);
-    }
+    search.addEventListener('input', () => {
+      const q = search.value.toLowerCase();
+      const filtered = data.filter(r => (r.Name || '').toLowerCase().includes(q) || (r.SKU || r.Code || '').toLowerCase().includes(q));
+      render(filtered);
+    });
+
+    loadData();
   </script>
 </body>
 </html>
+
+
