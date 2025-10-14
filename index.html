@@ -8,79 +8,163 @@
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.5.3/papaparse.min.js"></script>
   <style>
     body { font-family: system-ui, sans-serif; }
-    .loading { animation: pulse 1.5s infinite; }
-    @keyframes pulse { 0%,100% {opacity:.4} 50%{opacity:1} }
+    .badge { font-size: 10px; padding: 2px 6px; border-radius: 9999px; background:#eef2ff; color:#4338ca }
+    .muted { color: #64748b }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
-  <div class="max-w-4xl mx-auto p-6">
-    <h1 class="text-2xl font-semibold mb-4">Nuway Product Lookup</h1>
-    <p class="text-sm text-slate-600 mb-4">Automatically connected to your Dropbox file. It updates daily — just search below.</p>
-
-    <div class="mb-4">
-      <input id="search" type="text" placeholder="Search by product name or code..." class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500">
+  <div class="max-w-6xl mx-auto p-6">
+    <div class="flex items-center justify-between gap-4 mb-4">
+      <h1 class="text-2xl font-semibold">Nuway Product Lookup</h1>
+      <span class="badge">Live from Dropbox</span>
     </div>
-    <div id="status" class="text-sm text-slate-600 mb-4">Loading latest data...</div>
+    <p class="text-sm muted mb-4">Type part of a name (e.g. <em>granite</em>) or a full/partial SKU. Results include any row where <em>all words</em> appear anywhere in the description or SKU. Exact SKU matches are prioritised to the top.</p>
 
-    <table class="min-w-full bg-white shadow rounded-lg overflow-hidden">
-      <thead class="bg-slate-100 text-slate-600">
-        <tr>
-          <th class="text-left px-4 py-2">Code</th>
-          <th class="text-left px-4 py-2">Name</th>
-          <th class="text-right px-4 py-2">Stock</th>
-          <th class="text-right px-4 py-2">Price</th>
-        </tr>
-      </thead>
-      <tbody id="results"></tbody>
-    </table>
+    <div class="mb-4 flex items-center gap-3">
+      <input id="search" type="text" placeholder="Search by name/description or SKU…" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500">
+      <select id="limit" class="p-2 border rounded-md">
+        <option value="50">50</option>
+        <option value="100" selected>100</option>
+        <option value="500">500</option>
+        <option value="0">All</option>
+      </select>
+    </div>
+
+    <div id="status" class="text-sm muted mb-3">Loading latest data…</div>
+
+    <div class="overflow-x-auto bg-white shadow rounded-lg">
+      <table class="min-w-full text-sm">
+        <thead class="bg-slate-100 text-slate-600">
+          <tr>
+            <th class="text-left px-4 py-2">SKU</th>
+            <th class="text-left px-4 py-2">Name / Description</th>
+            <th class="text-right px-4 py-2">Stock</th>
+            <th class="text-right px-4 py-2">Price</th>
+          </tr>
+        </thead>
+        <tbody id="results"></tbody>
+      </table>
+    </div>
   </div>
 
   <script>
-    const dropboxUrl = "https://dl.dropboxusercontent.com/scl/fi/azkwfwj60sx2vqayrmww0/lookup_summary.csv?rlkey=gn4chbyoewcb75fltvo8r4u4e&dl=1";
-    const status = document.getElementById('status');
-    const results = document.getElementById('results');
-    const search = document.getElementById('search');
-    let data = [];
+    // --- Config
+    const DROPBOX_DIRECT = "https://dl.dropboxusercontent.com/scl/fi/azkwfwj60sx2vqayrmww0/lookup_summary.csv?rlkey=gn4chbyoewcb75fltvo8r4u4e&dl=1";
 
-    async function loadData() {
-      try {
-        status.textContent = 'Fetching data...';
-        const res = await fetch(dropboxUrl);
-        if (!res.ok) throw new Error('Network error');
-        const text = await res.text();
-        const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
-        data = parsed.data;
-        status.textContent = `Loaded ${data.length.toLocaleString()} products.`;
-        render(data);
-      } catch (e) {
-        console.error(e);
-        status.textContent = '⚠️ Could not load CSV. Please check the Dropbox link permissions.';
+    // --- DOM
+    const statusEl = document.getElementById('status');
+    const resultsEl = document.getElementById('results');
+    const searchEl = document.getElementById('search');
+    const limitEl = document.getElementById('limit');
+
+    // --- State
+    let rows = [];
+    let cols = { code: null, name: null, stock: null, price: null, allTextCols: [] };
+
+    // --- Helpers
+    const norm = v => (v==null ? '' : String(v)).toLowerCase();
+    const money = n => {
+      const x = Number(n);
+      return Number.isFinite(x) ? new Intl.NumberFormat('en-AU',{style:'currency',currency:'AUD'}).format(x) : '';
+    };
+
+    function detectColumns(headers){
+      const H = headers.map(h => h.trim());
+      const lower = H.map(h => h.toLowerCase());
+      const pick = (cands) => {
+        let i = lower.findIndex(h => cands.includes(h));
+        if (i>=0) return H[i];
+        // startsWith fallback
+        i = lower.findIndex(h => cands.some(c=>h.startsWith(c)));
+        return i>=0 ? H[i] : null;
+      };
+      const code = pick(['sku','code','product code','item code','item','part','productid','product id']);
+      const name = pick(['name','description','product','product name','item name','desc','long description']);
+      const stock = pick(['stock','qty','quantity','on hand','onhand','soh','available']);
+      const price = pick(['price','sell','sell price','sellprice','unit price','unitprice','list price']);
+
+      // Also capture all text-like columns for broader matching
+      const allTextCols = H.filter((h,i)=> {
+        const lh = lower[i];
+        return !['stock','qty','quantity','on hand','onhand','soh','available','price','sell','unit price','unitprice'].includes(lh);
+      });
+
+      return { code: code||H[0], name: name||H[1]||H[0], stock, price, allTextCols };
+    }
+
+    function buildIndex(data){
+      for(const r of data){
+        r.__code = norm(r[cols.code]);
+        r.__name = norm(r[cols.name]);
+        // giant searchable blob from all text columns
+        r.__blob = norm(cols.allTextCols.map(c=>r[c]).join(' '));
       }
     }
 
-    function render(rows) {
-      results.innerHTML = '';
-      for (const row of rows) {
+    function query(q){
+      const terms = norm(q).split(/\s+/).filter(Boolean);
+      if(terms.length===0) return rows.slice();
+
+      // exact SKU priority
+      const exact = [];
+      const others = [];
+      for(const r of rows){
+        const allMatch = terms.every(t => r.__blob.includes(t) || r.__code.includes(t));
+        if(!allMatch) continue;
+        if(r.__code && terms.length===1 && (r.__code === terms[0])) exact.push(r);
+        else others.push(r);
+      }
+      // Secondary: bring rows whose name starts with the first term to the front
+      others.sort((a,b)=> (a.__name.indexOf(terms[0]) - b.__name.indexOf(terms[0])));
+      return exact.concat(others);
+    }
+
+    function render(list){
+      const cap = Number(limitEl.value);
+      const show = cap>0 ? list.slice(0,cap) : list;
+      resultsEl.innerHTML = '';
+      for(const r of show){
         const tr = document.createElement('tr');
         tr.className = 'odd:bg-white even:bg-slate-50';
+        const stock = cols.stock ? Number(r[cols.stock]) : NaN;
+        const price = cols.price ? Number(r[cols.price]) : NaN;
         tr.innerHTML = `
-          <td class='px-4 py-2'>${row.SKU || row.Code || ''}</td>
-          <td class='px-4 py-2'>${row.Name || row.Product || ''}</td>
-          <td class='px-4 py-2 text-right'>${row.Stock || row.Qty || ''}</td>
-          <td class='px-4 py-2 text-right'>${row.Price || ''}</td>`;
-        results.appendChild(tr);
+          <td class="px-4 py-2 whitespace-nowrap">${r[cols.code]??''}</td>
+          <td class="px-4 py-2">${r[cols.name]??''}</td>
+          <td class="px-4 py-2 text-right tabular-nums">${Number.isFinite(stock)?stock.toLocaleString():''}</td>
+          <td class="px-4 py-2 text-right tabular-nums">${money(price)}</td>`;
+        resultsEl.appendChild(tr);
+      }
+      statusEl.textContent = `${list.length.toLocaleString()} match(es)`;
+    }
+
+    async function load(){
+      try{
+        statusEl.textContent = 'Fetching CSV…';
+        const res = await fetch(DROPBOX_DIRECT);
+        if(!res.ok) throw new Error('Network error '+res.status);
+        const text = await res.text();
+        const parsed = Papa.parse(text,{header:true, skipEmptyLines:true, dynamicTyping:false});
+        rows = parsed.data;
+        cols = detectColumns(parsed.meta.fields||Object.keys(rows[0]||{}));
+        buildIndex(rows);
+        statusEl.textContent = `Loaded ${rows.length.toLocaleString()} rows.`;
+        render(rows);
+      } catch(e){
+        console.error(e);
+        statusEl.textContent = '⚠️ Could not load CSV. Check Dropbox permissions.';
       }
     }
 
-    search.addEventListener('input', () => {
-      const q = search.value.toLowerCase();
-      const filtered = data.filter(r => (r.Name || '').toLowerCase().includes(q) || (r.SKU || r.Code || '').toLowerCase().includes(q));
-      render(filtered);
-    });
+    // events
+    let t=null;
+    searchEl.addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(()=>{ render(query(searchEl.value)); }, 120); });
+    limitEl.addEventListener('change', ()=> render(query(searchEl.value)) );
 
-    loadData();
+    load();
   </script>
 </body>
 </html>
+
 
 
