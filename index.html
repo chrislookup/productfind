@@ -16,14 +16,16 @@
 <body class="bg-slate-50 text-slate-800">
   <div class="max-w-6xl mx-auto p-6 space-y-6">
     <div class="flex items-center justify-between gap-4">
-      <h1 class="text-2xl font-semibold flex items-center gap-3"><img src="logo.png" alt="Stone & Outdoor" class="h-8 w-auto hidden sm:block"/><span>Stone & Outdoor — Product Lookup</span></h1>
+      <h1 class="text-2xl font-semibold flex items-center gap-3">
+        <img src="logo.png" alt="Stone & Outdoor" class="h-10 w-auto hidden sm:block"/>
+        <span>Stone & Outdoor — Product Lookup</span>
+      </h1>
       <span class="badge">Live from Dropbox</span>
     </div>
 
     <div class="card p-4">
       <div class="flex gap-3 items-center">
         <input id="search" type="text" placeholder="Search by name/description or SKU…" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500">
-        <label class="text-sm flex items-center gap-2"><input id="allToggle" type="checkbox" class="rounded" checked> Show all results</label>
         <select id="limit" class="p-2 border rounded-md">
           <option value="50">50</option>
           <option value="100">100</option>
@@ -69,35 +71,29 @@
   </div>
 
   <script>
-    // --- Config
     const DROPBOX_DIRECT = "https://dl.dropboxusercontent.com/scl/fi/azkwfwj60sx2vqayrmww0/lookup_summary.csv?rlkey=gn4chbyoewcb75fltvo8r4u4e&dl=1";
-    const LSKEY = 'nuway:lookup:mapping';
+    const LSKEY = 'stoneoutdoor:lookup:mapping';
 
-    // --- DOM
     const statusEl = document.getElementById('status');
     const resultsEl = document.getElementById('results');
     const searchEl = document.getElementById('search');
     const limitEl = document.getElementById('limit');
-    const allToggle = document.getElementById('allToggle');
-
     const mappingBox = document.getElementById('mapping');
     const selCode = document.getElementById('colCode');
     const selName = document.getElementById('colName');
     const selStock = document.getElementById('colStock');
     const selPrice = document.getElementById('colPrice');
 
-    // --- State
     let rows = [];
     let cols = { code:null, name:null, stock:null, price:null, allTextCols:[] };
 
-    // --- Helpers
     const norm = v => (v==null ? '' : String(v)).toLowerCase();
     const money = n => {
       const x = toNumber(n);
       return Number.isFinite(x) ? new Intl.NumberFormat('en-AU',{style:'currency',currency:'AUD'}).format(x) : '';
     };
     const toNumber = v => {
-      if (v==null) return NaN; // handle '', null
+      if (v==null) return NaN;
       const s = String(v).replace(/[,\s]/g,'');
       const n = parseFloat(s);
       return Number.isFinite(n) ? n : NaN;
@@ -122,7 +118,6 @@
       const stock = pick(['stock','qty','quantity','on hand','onhand','soh','available']);
       const price = pick(['price','sell','sell price','sellprice','unit price','unitprice','list price']);
 
-      // All text-like columns for broader matching (exclude obvious numeric headers)
       const numericHints = ['stock','qty','quantity','on hand','onhand','soh','available','price','sell','unit price','unitprice','cost'];
       const allTextCols = H.filter((h,i)=> !numericHints.includes(lower[i]));
 
@@ -148,18 +143,15 @@
 
     function query(q){
       const terms = norm(q).split(/\s+/).filter(Boolean);
-      if(terms.length===0) return rows.slice();
+      if(terms.length===0) return rows.filter(r => Number.isFinite(r.__stock) && r.__stock > 0);
 
-      // Search the WHOLE file (no paging filters) and then sort
       const exact = [];
       const others = [];
       for(const r of rows){
-        // AND logic across terms, match against big blob + SKU
         const allMatch = terms.every(t => r.__blob.includes(t) || r.__code.includes(t));
         if(!allMatch) continue;
         if(terms.length===1 && r.__code === terms[0]) exact.push(r); else others.push(r);
       }
-      // Prioritise SKU/Name starts-with, then fallback alphabetical by name
       const first = terms[0]||'';
       others.sort((a,b)=>{
         const as = a.__code.startsWith(first) || a.__name.startsWith(first);
@@ -172,20 +164,13 @@
 
     function render(list){
       const cap = Number(limitEl.value);
-      const show = (cap>0 && !allToggle.checked) ? list.slice(0,cap) : list;
+      const show = cap>0 ? list.slice(0,cap) : list;
       resultsEl.innerHTML = '';
       for(const r of show){
         const tr = document.createElement('tr');
         tr.className = 'odd:bg-white even:bg-slate-50';
         tr.innerHTML = `
           <td class="px-4 py-2 whitespace-nowrap">${r[cols.code]??''}</td>
-          <td class="px-4 py-2">${r[cols.name]??''}</td>
-          <td class="px-4 py-2 text-right tabular-nums">${Number.isFinite(r.__stock)? r.__stock.toLocaleString(): ''}</td>
-          <td class="px-4 py-2 text-right tabular-nums">${money(r.__price)}</td>`;
-        resultsEl.appendChild(tr);
-      }
-      statusEl.textContent = `${list.length.toLocaleString()} match(es)`;
-    }</td>
           <td class="px-4 py-2">${r[cols.name]??''}</td>
           <td class="px-4 py-2 text-right tabular-nums">${Number.isFinite(r.__stock)? r.__stock.toLocaleString(): ''}</td>
           <td class="px-4 py-2 text-right tabular-nums">${money(r.__price)}</td>`;
@@ -203,41 +188,25 @@
         const parsed = Papa.parse(text,{header:true, skipEmptyLines:true, dynamicTyping:false});
         rows = parsed.data;
 
-        // Column detection + allow override; remember choice
         const headers = parsed.meta.fields || Object.keys(rows[0]||{});
         const saved = loadSavedMapping();
         cols = saved || detectColumns(headers);
         applyMappingSelectors(headers);
         buildIndex(rows);
         statusEl.textContent = `Loaded ${rows.length.toLocaleString()} rows.`;
-        render(rows);
+        render(query(''));
       } catch(e){
         console.error(e);
         statusEl.textContent = '⚠️ Could not load CSV. Check Dropbox permissions.';
       }
     }
 
-    // events
     let t=null;
-    searchEl.addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(()=>{ updateView(); }, 120); });
-    limitEl.addEventListener('change', ()=> updateView() );
-    allToggle.addEventListener('change', ()=> updateView() );
+    searchEl.addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(()=>{ render(query(searchEl.value)); }, 120); });
+    limitEl.addEventListener('change', ()=> render(query(searchEl.value)) );
 
     for (const [sel, key] of [[selCode,'code'], [selName,'name'], [selStock,'stock'], [selPrice,'price']]){
       sel.addEventListener('change', ()=>{ cols[key] = sel.value || null; saveMapping(); buildIndex(rows); render(query(searchEl.value)); });
-    }
-
-    function baseList(){
-      const q = searchEl.value.trim();
-      if(q===''){
-        // Default: only non-zero stock when no search
-        return rows.filter(r => Number.isFinite(r.__stock) && r.__stock > 0);
-      }
-      return query(q);
-    }
-
-    function updateView(){
-      render(baseList());
     }
 
     load();
