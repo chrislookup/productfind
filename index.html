@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -26,12 +27,6 @@
     <div class="card p-4">
       <div class="flex gap-3 items-center">
         <input id="search" type="text" placeholder="Search by name/description or SKU…" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500">
-        <select id="limit" class="p-2 border rounded-md">
-          <option value="50">50</option>
-          <option value="100">100</option>
-          <option value="500">500</option>
-          <option value="0" selected>All</option>
-        </select>
       </div>
       <div id="status" class="text-sm muted mt-2">Loading latest data…</div>
       <div id="mapping" class="hidden mt-3 grid grid-cols-1 md:grid-cols-4 gap-3">
@@ -48,10 +43,12 @@
           <select id="colStock" class="w-full p-2 border rounded-md"></select>
         </div>
         <div>
-          <label class="block text-sm mb-1">Price column (optional)</label>
+          <label class="block text-sm mb-1">RRP column (optional)</label>
           <select id="colPrice" class="w-full p-2 border rounded-md"></select>
         </div>
-        <div class="md:col-span-4 text-xs muted">Tip: If numbers look wrong, pick the correct stock/price header above. Your choice is remembered.</div>
+        <div class="md:col-span-4 text-xs muted">
+          Tip: If numbers look wrong, pick the correct stock/RRP header above. Your choice is remembered.
+        </div>
       </div>
     </div>
 
@@ -62,7 +59,7 @@
             <th class="text-left px-4 py-2">SKU</th>
             <th class="text-left px-4 py-2">Name / Description</th>
             <th class="text-right px-4 py-2">Stock</th>
-            <th class="text-right px-4 py-2">Price</th>
+            <th class="text-right px-4 py-2">RRP</th>
           </tr>
         </thead>
         <tbody id="results"></tbody>
@@ -71,36 +68,40 @@
   </div>
 
   <script>
+    // === CONFIG ===
     const DROPBOX_DIRECT = "https://dl.dropboxusercontent.com/scl/fi/azkwfwj60sx2vqayrmww0/lookup_summary.csv?rlkey=gn4chbyoewcb75fltvo8r4u4e&dl=1";
     const LSKEY = 'stoneoutdoor:lookup:mapping';
 
+    // === DOM ===
     const statusEl = document.getElementById('status');
     const resultsEl = document.getElementById('results');
-    const searchEl = document.getElementById('search');
-    const limitEl = document.getElementById('limit');
+    const searchEl  = document.getElementById('search');
     const mappingBox = document.getElementById('mapping');
     const selCode = document.getElementById('colCode');
     const selName = document.getElementById('colName');
     const selStock = document.getElementById('colStock');
     const selPrice = document.getElementById('colPrice');
 
+    // === STATE ===
     let rows = [];
     let cols = { code:null, name:null, stock:null, price:null, allTextCols:[] };
 
+    // === HELPERS ===
     const norm = v => (v==null ? '' : String(v)).toLowerCase();
-    const money = n => {
-      const x = toNumber(n);
-      return Number.isFinite(x) ? new Intl.NumberFormat('en-AU',{style:'currency',currency:'AUD'}).format(x) : '';
-    };
     const toNumber = v => {
       if (v==null) return NaN;
       const s = String(v).replace(/[,\s]/g,'');
       const n = parseFloat(s);
       return Number.isFinite(n) ? n : NaN;
     };
+    const money = n => {
+      const x = toNumber(n);
+      return Number.isFinite(x) ? new Intl.NumberFormat('en-AU',{style:'currency',currency:'AUD'}).format(x) : '';
+    };
 
     function loadSavedMapping(){
-      try{ const m = JSON.parse(localStorage.getItem(LSKEY)||'null'); return m||null; }catch{ return null }
+      try { return JSON.parse(localStorage.getItem(LSKEY) || 'null') || null; }
+      catch { return null; }
     }
     function saveMapping(){ localStorage.setItem(LSKEY, JSON.stringify(cols)); }
 
@@ -113,29 +114,33 @@
         i = lower.findIndex(h => cands.some(c=>h.startsWith(c)));
         return i>=0 ? H[i] : null;
       };
-      const code = pick(['sku','code','product code','item code','item','part','productid','product id']);
-      const name = pick(['name','description','product','product name','item name','desc','long description']);
-      const stock = pick(['stock','qty','quantity','on hand','onhand','soh','available']);
-      const price = pick(['price','sell','sell price','sellprice','unit price','unitprice','list price']);
-
-      const numericHints = ['stock','qty','quantity','on hand','onhand','soh','available','price','sell','unit price','unitprice','cost'];
+      const code  = pick(['sku','code','product code','item code','item','part','productid','product id','barcode']);
+      const name  = pick(['name','description','product','product name','item name','desc','long description']);
+      const stock = pick(['stock','qty','quantity','on hand','onhand','soh','available','available_qty']);
+      const price = pick(['rrp','sell_inc','price','sell','sell price','sellprice','unit price','unitprice','list price']);
+      const numericHints = ['stock','qty','quantity','on hand','onhand','soh','available','available_qty','price','rrp','sell','sell_inc','unit price','unitprice','cost'];
       const allTextCols = H.filter((h,i)=> !numericHints.includes(lower[i]));
-
       return { code: code||H[0], name: name||H[1]||H[0], stock, price, allTextCols };
     }
 
     function applyMappingSelectors(headers){
       const opts = headers.map(h=>`<option value="${h}">${h}</option>`).join('');
-      selCode.innerHTML = opts; selName.innerHTML = opts; selStock.innerHTML = '<option value="">—</option>'+opts; selPrice.innerHTML = '<option value="">—</option>'+opts;
-      selCode.value = cols.code; selName.value = cols.name; selStock.value = cols.stock||''; selPrice.value = cols.price||'';
+      selCode.innerHTML  = opts;
+      selName.innerHTML  = opts;
+      selStock.innerHTML = '<option value="">—</option>'+opts;
+      selPrice.innerHTML = '<option value="">—</option>'+opts;
+      selCode.value  = cols.code;
+      selName.value  = cols.name;
+      selStock.value = cols.stock || '';
+      selPrice.value = cols.price || '';
       mappingBox.classList.remove('hidden');
     }
 
     function buildIndex(data){
       for(const r of data){
-        r.__code = norm(r[cols.code]);
-        r.__name = norm(r[cols.name]);
-        r.__blob = norm(cols.allTextCols.map(c=>r[c]).join(' '));
+        r.__code  = norm(r[cols.code]);
+        r.__name  = norm(r[cols.name]);
+        r.__blob  = norm(cols.allTextCols.map(c=>r[c]).join(' '));
         r.__stock = toNumber(r[cols.stock]);
         r.__price = toNumber(r[cols.price]);
       }
@@ -143,14 +148,16 @@
 
     function query(q){
       const terms = norm(q).split(/\s+/).filter(Boolean);
-      if(terms.length===0) return rows.filter(r => Number.isFinite(r.__stock) && r.__stock > 0);
-
-      const exact = [];
-      const others = [];
-      for(const r of rows){
-        const allMatch = terms.every(t => r.__blob.includes(t) || r.__code.includes(t));
-        if(!allMatch) continue;
-        if(terms.length===1 && r.__code === terms[0]) exact.push(r); else others.push(r);
+      if (terms.length === 0) {
+        // Default: only non-zero stock
+        return rows.filter(r => Number.isFinite(r.__stock) && r.__stock > 0);
+      }
+      const exact = [], others = [];
+      for (const r of rows){
+        const ok = terms.every(t => r.__blob.includes(t) || r.__code.includes(t));
+        if (!ok) continue;
+        if (terms.length===1 && r.__code === terms[0]) exact.push(r);
+        else others.push(r);
       }
       const first = terms[0]||'';
       others.sort((a,b)=>{
@@ -163,10 +170,8 @@
     }
 
     function render(list){
-      const cap = Number(limitEl.value);
-      const show = cap>0 ? list.slice(0,cap) : list;
       resultsEl.innerHTML = '';
-      for(const r of show){
+      for(const r of list){
         const tr = document.createElement('tr');
         tr.className = 'odd:bg-white even:bg-slate-50';
         tr.innerHTML = `
@@ -201,10 +206,9 @@
       }
     }
 
+    // Events
     let t=null;
     searchEl.addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(()=>{ render(query(searchEl.value)); }, 120); });
-    limitEl.addEventListener('change', ()=> render(query(searchEl.value)) );
-
     for (const [sel, key] of [[selCode,'code'], [selName,'name'], [selStock,'stock'], [selPrice,'price']]){
       sel.addEventListener('change', ()=>{ cols[key] = sel.value || null; saveMapping(); buildIndex(rows); render(query(searchEl.value)); });
     }
@@ -213,6 +217,3 @@
   </script>
 </body>
 </html>
-
-
-
