@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,31 +9,25 @@
   <style>
     body { font-family: system-ui, sans-serif; }
     .muted { color:#64748b }
-    .badge { font-size:10px; padding:2px 6px; border-radius:9999px; background:#eef2ff; color:#4338ca }
     .card  { background:#fff; border:1px solid #e2e8f0; border-radius:14px; box-shadow:0 1px 2px rgba(0,0,0,.03) }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
   <div class="max-w-6xl mx-auto p-6 space-y-6">
     <!-- Header -->
-    <div class="flex items-center justify-between gap-4">
-      <h1 class="text-2xl font-semibold flex items-center gap-3">
-        <!-- Make the logo big -->
-        <a href="https://www.stoneoutdoor.com.au" target="_blank" rel="noopener">
-          <img src="logo.png" alt="Stone & Outdoor" class="h-24 md:h-28 w-auto"/>
-        </a>
-      </h1>
-      <div class="flex items-center gap-4">
-        <a href="https://www.stoneoutdoor.com.au" target="_blank" rel="noopener" class="text-sm text-blue-600 hover:underline">
-          stoneoutdoor.com.au
-        </a>
-        <span class="badge">Live from Dropbox</span>
-      </div>
+    <div class="flex items-center justify-between gap-6">
+      <!-- BIG logo; clicking it goes to your site -->
+      <a href="https://www.stoneoutdoor.com.au" target="_blank" rel="noopener" class="block">
+        <img src="logo.png" alt="Stone & Outdoor" class="h-28 md:h-36 w-auto"/>
+      </a>
+      <a href="https://www.stoneoutdoor.com.au" target="_blank" rel="noopener"
+         class="text-sm text-blue-600 hover:underline whitespace-nowrap">stoneoutdoor.com.au</a>
     </div>
 
     <!-- Search + status -->
     <div class="card p-4">
-      <input id="search" type="text" placeholder="Search by name/description or SKU…" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500">
+      <input id="search" type="text" placeholder="Search by name/description or SKU…"
+             class="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500">
       <div id="status" class="text-sm muted mt-2">Loading latest data…</div>
     </div>
 
@@ -43,8 +36,8 @@
       <table class="min-w-full text-sm">
         <thead class="bg-slate-100 text-slate-600">
           <tr>
-            <th class="text-left px-4 py-2">SKU</th>
-            <th class="text-left px-4 py-2">Name / Description</th>
+            <th class="text-left  px-4 py-2">SKU</th>
+            <th class="text-left  px-4 py-2">Name / Description</th>
             <th class="text-right px-4 py-2">Stock</th>
             <th class="text-right px-4 py-2">RRP</th>
           </tr>
@@ -59,6 +52,14 @@
     const DROPBOX_DIRECT =
       "https://dl.dropboxusercontent.com/scl/fi/azkwfwj60sx2vqayrmww0/lookup_summary.csv?rlkey=gn4chbyoewcb75fltvo8r4u4e&dl=1";
 
+    // Fixed column mapping for your CSV
+    const COLS = {
+      code:  "barcode",
+      name:  "description",
+      stock: "available_qty",
+      price: "sell_inc"   // shown as RRP
+    };
+
     // === DOM ===
     const statusEl  = document.getElementById('status');
     const resultsEl = document.getElementById('results');
@@ -66,7 +67,6 @@
 
     // === STATE ===
     let rows = [];
-    let cols = { code:null, name:null, stock:null, price:null, allTextCols:[] };
 
     // === HELPERS ===
     const norm = v => (v==null ? '' : String(v)).toLowerCase();
@@ -83,31 +83,13 @@
         : '';
     };
 
-    function detectColumns(headers){
-      const H = headers.map(h => String(h).trim());
-      const lower = H.map(h => h.toLowerCase());
-      const pick = (cands) => {
-        let i = lower.findIndex(h => cands.includes(h));
-        if (i>=0) return H[i];
-        i = lower.findIndex(h => cands.some(c=>h.startsWith(c)));
-        return i>=0 ? H[i] : null;
-      };
-      const code  = pick(['sku','code','product code','item code','item','part','productid','product id','barcode']);
-      const name  = pick(['name','description','product','product name','item name','desc','long description']);
-      const stock = pick(['stock','qty','quantity','on hand','onhand','soh','available','available_qty']);
-      const price = pick(['rrp','sell_inc','price','sell','sell price','sellprice','unit price','unitprice','list price']);
-      const numericHints = ['stock','qty','quantity','on hand','onhand','soh','available','available_qty','price','rrp','sell','sell_inc','unit price','unitprice','cost'];
-      const allTextCols = H.filter((h,i)=> !numericHints.includes(lower[i]));
-      return { code: code||H[0], name: name||H[1]||H[0], stock, price, allTextCols };
-    }
-
     function buildIndex(data){
       for(const r of data){
-        r.__code  = norm(r[cols.code]);
-        r.__name  = norm(r[cols.name]);
-        r.__blob  = norm(cols.allTextCols.map(c=>r[c]).join(' '));
-        r.__stock = toNumber(r[cols.stock]);
-        r.__price = toNumber(r[cols.price]);
+        r.__code  = norm(r[COLS.code]);
+        r.__name  = norm(r[COLS.name]);
+        r.__blob  = norm([COLS.code, COLS.name].map(c=>r[c]).join(' '));
+        r.__stock = toNumber(r[COLS.stock]);
+        r.__price = toNumber(r[COLS.price]);
       }
     }
 
@@ -139,10 +121,10 @@
         const tr = document.createElement('tr');
         tr.className = 'odd:bg-white even:bg-slate-50';
         tr.innerHTML = `
-          <td class="px-4 py-2 whitespace-nowrap">${r[cols.code]??''}</td>
-          <td class="px-4 py-2">${r[cols.name]??''}</td>
+          <td class="px-4 py-2 whitespace-nowrap">${r[COLS.code]??''}</td>
+          <td class="px-4 py-2">${r[COLS.name]??''}</td>
           <td class="px-4 py-2 text-right tabular-nums">${Number.isFinite(r.__stock)? r.__stock.toLocaleString(): ''}</td>
-          <td class="px-4 py-2 text-right tabular-nums">${money(r.__price)}</td>`;
+          <td class="px-4 py-2 text-right tabular-nums">${money(r[COLS.price])}</td>`;
         resultsEl.appendChild(tr);
       }
       statusEl.textContent = `${list.length.toLocaleString()} match(es)`;
@@ -156,9 +138,6 @@
         const text = await res.text();
         const parsed = Papa.parse(text,{header:true, skipEmptyLines:true, dynamicTyping:false});
         rows = parsed.data;
-
-        const headers = parsed.meta.fields || Object.keys(rows[0]||{});
-        cols = detectColumns(headers);
         buildIndex(rows);
         statusEl.textContent = `Loaded ${rows.length.toLocaleString()} rows.`;
         render(query(''));
@@ -176,3 +155,4 @@
   </script>
 </body>
 </html>
+
