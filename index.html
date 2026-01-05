@@ -4,8 +4,10 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Stone & Outdoor — Product Lookup</title>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.5.3/papaparse.min.js"></script>
+
   <style>
     body { font-family: system-ui, sans-serif; }
     .muted { color:#64748b }
@@ -26,7 +28,7 @@
 
     <!-- Delivery price lookup button -->
     <div class="flex justify-start">
-      <a href="https://www.google.com/maps/d/viewer?mid=1kHa9XVylzNZxV5f7ioo60CvtU1HscAY2&ll=-27.86181630731756%2C153.6993050830023&z=9"
+      <a href="https://www.google.com/maps/d/viewer?mid=1kHa9XVylzNZxV5f7ioo60CvtU1HscAY2"
          target="_blank" rel="noopener"
          class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
@@ -61,10 +63,31 @@
   </div>
 
   <script>
-    // === CONFIG ===
-    // Updated to your provided Dropbox link, converted to direct-download (stable format).
-    const DROPBOX_DIRECT =
-      "https://dl.dropboxusercontent.com/scl/fi/jg9pssmaw0gdogvjps1ii/lookup_summary.csv?rlkey=wu659zpoqfjty6f3ab9ryv2h3&dl=1";
+    // =========================
+    // CONFIG
+    // =========================
+
+    // Your Dropbox link (share link is fine; code converts it to best direct candidates)
+    const DROPBOX_SHARE =
+      "https://www.dropbox.com/scl/fi/jg9pssmaw0gdogvjps1ii/lookup_summary.csv?rlkey=wu659zpoqfjty6f3ab9ryv2h3&dl=0";
+
+    // Candidate URLs to try (Dropbox can be fickle across browsers/networks)
+    const CSV_URLS = (() => {
+      const u = new URL(DROPBOX_SHARE);
+      u.searchParams.delete("st");
+      u.searchParams.set("dl", "1");
+      const v1 = u.toString(); // www.dropbox.com ... dl=1
+
+      const u2 = new URL(v1);
+      u2.hostname = "dl.dropboxusercontent.com";
+      const v2 = u2.toString(); // dl.dropboxusercontent.com ... dl=1
+
+      const u3 = new URL(v2);
+      u3.searchParams.delete("dl");
+      const v3 = u3.toString(); // dl.dropboxusercontent.com ... (no dl param)
+
+      return [v2, v3, v1];
+    })();
 
     // Fixed column mapping for your CSV
     const COLS = {
@@ -74,23 +97,31 @@
       price: "sell_inc"   // shown as RRP
     };
 
-    // === DOM ===
+    // =========================
+    // DOM
+    // =========================
     const statusEl  = document.getElementById('status');
     const resultsEl = document.getElementById('results');
     const searchEl  = document.getElementById('search');
     const debugEl   = document.getElementById('debug');
 
-    // === STATE ===
+    // =========================
+    // STATE
+    // =========================
     let rows = [];
 
-    // === HELPERS ===
-    const norm = v => (v==null ? '' : String(v)).toLowerCase();
+    // =========================
+    // HELPERS
+    // =========================
+    const norm = v => (v==null ? '' : String(v)).toLowerCase().trim();
+
     const toNumber = v => {
       if (v==null) return NaN;
       const s = String(v).replace(/[,\s]/g,'');
       const n = parseFloat(s);
       return Number.isFinite(n) ? n : NaN;
     };
+
     const money = n => {
       const x = toNumber(n);
       return Number.isFinite(x)
@@ -112,7 +143,7 @@
       for(const r of data){
         r.__code  = norm(r[COLS.code]);
         r.__name  = norm(r[COLS.name]);
-        r.__blob  = norm([COLS.code, COLS.name].map(c=>r[c]).join(' '));
+        r.__blob  = norm(`${r[COLS.code] ?? ''} ${r[COLS.name] ?? ''}`);
         r.__stock = toNumber(r[COLS.stock]);
         r.__price = toNumber(r[COLS.price]);
       }
@@ -121,27 +152,31 @@
     function query(q){
       const terms = norm(q).split(/\s+/).filter(Boolean);
 
+      // Default: only non-zero stock
       if (terms.length === 0) {
-        // Default: only non-zero stock
         return rows.filter(r => Number.isFinite(r.__stock) && r.__stock > 0);
       }
 
-      const exact = [], others = [];
-      for (const r of rows){
-        const ok = terms.every(t => r.__blob.includes(t) || r.__code.includes(t));
-        if (!ok) continue;
-        if (terms.length===1 && r.__code === terms[0]) exact.push(r); else others.push(r);
-      }
+      const one = (terms.length === 1) ? terms[0] : null;
 
-      const first = terms[0]||'';
-      others.sort((a,b)=>{
-        const as = a.__code.startsWith(first) || a.__name.startsWith(first);
-        const bs = b.__code.startsWith(first) || b.__name.startsWith(first);
-        if (as!==bs) return as? -1: 1;
+      const matched = rows.filter(r => {
+        return terms.every(t => r.__blob.includes(t) || r.__code.includes(t));
+      });
+
+      matched.sort((a,b)=>{
+        if(one){
+          const aExact = a.__code === one;
+          const bExact = b.__code === one;
+          if(aExact !== bExact) return aExact ? -1 : 1;
+
+          const aStarts = a.__code.startsWith(one) || a.__name.startsWith(one);
+          const bStarts = b.__code.startsWith(one) || b.__name.startsWith(one);
+          if(aStarts !== bStarts) return aStarts ? -1 : 1;
+        }
         return a.__name.localeCompare(b.__name);
       });
 
-      return exact.concat(others);
+      return matched;
     }
 
     function render(list){
@@ -153,43 +188,106 @@
           <td class="px-4 py-2 whitespace-nowrap">${r[COLS.code] ?? ''}</td>
           <td class="px-4 py-2">${r[COLS.name] ?? ''}</td>
           <td class="px-4 py-2 text-right tabular-nums">${Number.isFinite(r.__stock) ? r.__stock.toLocaleString() : ''}</td>
-          <td class="px-4 py-2 text-right tabular-nums">${money(r[COLS.price])}</td>`;
+          <td class="px-4 py-2 text-right tabular-nums">${money(r.__price)}</td>
+        `;
         resultsEl.appendChild(tr);
       }
       statusEl.textContent = `${list.length.toLocaleString()} match(es)`;
     }
 
-    async function load(){
+    async function fetchTextWithTimeout(url, ms){
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), ms);
       try{
-        setDebug('');
-        statusEl.textContent = 'Fetching CSV…';
-
-        const res = await fetch(DROPBOX_DIRECT, { cache: "no-store" });
-
-        // If Dropbox returns HTML (login/forbidden), this tells you immediately.
+        const res = await fetch(url, { cache: "no-store", signal: controller.signal });
         if(!res.ok){
-          const body = await res.text().catch(()=> '');
-          throw new Error(`CSV fetch failed: ${res.status} ${res.statusText} | ${body.slice(0,200)}`);
+          const body = await res.text().catch(() => '');
+          throw new Error(`HTTP ${res.status} ${res.statusText} | ${body.slice(0,160)}`);
         }
-
+        const ct = (res.headers.get('content-type') || '').toLowerCase();
         const text = await res.text();
 
-        const parsed = Papa.parse(text, { header:true, skipEmptyLines:true, dynamicTyping:false });
-
-        if (parsed.errors && parsed.errors.length){
-          throw new Error('CSV parse error: ' + parsed.errors[0].message);
+        // If Dropbox returns HTML/login/redirect page, treat as failure
+        if (ct.includes('text/html') || /<!doctype html>|<html/i.test(text.slice(0,300))){
+          throw new Error('Dropbox returned HTML instead of CSV (permissions/link redirect).');
         }
 
-        rows = parsed.data || [];
-        buildIndex(rows);
+        // Quick sanity check
+        if (!text.includes(',')) throw new Error('Response does not look like CSV.');
 
-        statusEl.textContent = `Loaded ${rows.length.toLocaleString()} rows.`;
-        render(query(''));
-      } catch(e){
-        console.error(e);
-        statusEl.textContent = '⚠️ Could not load CSV. Check Dropbox permissions / link.';
-        setDebug(String(e && e.message ? e.message : e).slice(0, 220));
+        return text;
+      } finally {
+        clearTimeout(timer);
       }
+    }
+
+    function parseCsvNeverFail(text){
+      // IMPORTANT: we NEVER throw on Papa parse errors like TooManyFields.
+      // We still load whatever rows Papa produced.
+      const parsed = Papa.parse(text, {
+        header: true,
+        skipEmptyLines: "greedy",
+        dynamicTyping: false,
+        quoteChar: '"',
+        escapeChar: '"'
+      });
+
+      const data = (parsed.data || []).filter(r =>
+        r && (String(r[COLS.code] || '').trim() || String(r[COLS.name] || '').trim())
+      );
+
+      const errors = (parsed.errors || []);
+      const tooMany = errors.filter(e => e && (e.code === "TooManyFields" || String(e.message || '').toLowerCase().includes('too many fields')));
+
+      return { data, errors, tooMany };
+    }
+
+    async function load(){
+      statusEl.textContent = 'Loading latest data…';
+      setDebug('');
+
+      let lastErr = null;
+
+      for (let i = 0; i < CSV_URLS.length; i++){
+        const url = CSV_URLS[i];
+        try{
+          statusEl.textContent = 'Fetching CSV…';
+          const text = await fetchTextWithTimeout(url, 15000);
+
+          statusEl.textContent = 'Parsing CSV…';
+          const { data, errors, tooMany } = parseCsvNeverFail(text);
+
+          if (!data.length){
+            throw new Error('Parsed zero rows (CSV empty or headers changed).');
+          }
+
+          rows = data;
+          buildIndex(rows);
+
+          // NOTE: Even if there are parse errors, we still load and show results.
+          const warningCount = errors.length;
+          if (warningCount){
+            statusEl.textContent = `Loaded ${rows.length.toLocaleString()} rows (warning: ${warningCount} row issue(s)).`;
+            const extra = tooMany.length ? ` TooManyFields: ${tooMany.length}.` : '';
+            setDebug(`CSV loaded with warnings.${extra} (Tried URL ${i+1}/${CSV_URLS.length})`);
+          } else {
+            statusEl.textContent = `Loaded ${rows.length.toLocaleString()} rows.`;
+            setDebug('');
+          }
+
+          render(query(''));
+          return;
+
+        } catch(e){
+          lastErr = e;
+          console.warn('CSV load attempt failed:', url, e);
+          statusEl.textContent = `Trying another CSV link… (${i+1}/${CSV_URLS.length})`;
+        }
+      }
+
+      console.error(lastErr);
+      statusEl.textContent = '⚠️ Could not load CSV. Check Dropbox permissions / link.';
+      setDebug(String(lastErr && lastErr.message ? lastErr.message : lastErr).slice(0, 220));
     }
 
     // Search
