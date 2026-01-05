@@ -4,8 +4,10 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Stone & Outdoor — Product Lookup</title>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.5.3/papaparse.min.js"></script>
+
   <style>
     body { font-family: system-ui, sans-serif; }
     .muted { color:#64748b }
@@ -15,18 +17,21 @@
 
 <body class="bg-slate-50 text-slate-800">
   <div class="max-w-6xl mx-auto p-6 space-y-6">
+
     <!-- Header -->
     <div class="flex items-center justify-between gap-6">
-      <a href="https://www.stoneoutdoor.com.au" target="_blank" rel="noopener" class="block">
+      <a href="https://www.stoneoutdoor.com.au" target="_blank" rel="noopener">
         <img src="logo.png" alt="Stone & Outdoor" class="h-28 md:h-36 w-auto"/>
       </a>
       <a href="https://www.stoneoutdoor.com.au" target="_blank" rel="noopener"
-         class="text-sm text-blue-600 hover:underline whitespace-nowrap">stoneoutdoor.com.au</a>
+         class="text-sm text-blue-600 hover:underline whitespace-nowrap">
+        stoneoutdoor.com.au
+      </a>
     </div>
 
-    <!-- Delivery price lookup button -->
+    <!-- Delivery map -->
     <div class="flex justify-start">
-      <a href="https://www.google.com/maps/d/viewer?mid=1kHa9XVylzNZxV5f7ioo60CvtU1HscAY2&ll=-27.86181630731756%2C153.6993050830023&z=9"
+      <a href="https://www.google.com/maps/d/viewer?mid=1kHa9XVylzNZxV5f7ioo60CvtU1HscAY2"
          target="_blank" rel="noopener"
          class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
@@ -36,9 +41,10 @@
       </a>
     </div>
 
-    <!-- Search + status -->
+    <!-- Search -->
     <div class="card p-4">
-      <input id="search" type="text" placeholder="Search by name/description or SKU…"
+      <input id="search" type="text"
+             placeholder="Search by name/description or SKU…"
              class="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500">
       <div id="status" class="text-sm muted mt-2">Loading latest data…</div>
       <div id="debug" class="text-xs muted mt-1 hidden"></div>
@@ -49,8 +55,8 @@
       <table class="min-w-full text-sm">
         <thead class="bg-slate-100 text-slate-600">
           <tr>
-            <th class="text-left  px-4 py-2">SKU</th>
-            <th class="text-left  px-4 py-2">Name / Description</th>
+            <th class="text-left px-4 py-2">SKU</th>
+            <th class="text-left px-4 py-2">Name / Description</th>
             <th class="text-right px-4 py-2">Stock</th>
             <th class="text-right px-4 py-2">RRP</th>
           </tr>
@@ -58,39 +64,42 @@
         <tbody id="results"></tbody>
       </table>
     </div>
+
   </div>
 
   <script>
-    // === CONFIG ===
-    // Updated to your provided Dropbox link, converted to direct-download (stable format).
+    /* ================= CONFIG ================= */
+
     const DROPBOX_DIRECT =
       "https://dl.dropboxusercontent.com/scl/fi/jg9pssmaw0gdogvjps1ii/lookup_summary.csv?rlkey=wu659zpoqfjty6f3ab9ryv2h3&dl=1";
 
-    // Fixed column mapping for your CSV
     const COLS = {
       code:  "barcode",
       name:  "description",
       stock: "available_qty",
-      price: "sell_inc"   // shown as RRP
+      price: "sell_inc"
     };
 
-    // === DOM ===
+    /* ================= DOM ================= */
+
     const statusEl  = document.getElementById('status');
     const resultsEl = document.getElementById('results');
     const searchEl  = document.getElementById('search');
     const debugEl   = document.getElementById('debug');
 
-    // === STATE ===
+    /* ================= STATE ================= */
+
     let rows = [];
 
-    // === HELPERS ===
-    const norm = v => (v==null ? '' : String(v)).toLowerCase();
+    /* ================= HELPERS ================= */
+
+    const norm = v => (v == null ? '' : String(v)).toLowerCase();
+
     const toNumber = v => {
-      if (v==null) return NaN;
-      const s = String(v).replace(/[,\s]/g,'');
-      const n = parseFloat(s);
+      const n = parseFloat(String(v).replace(/[,\s]/g,''));
       return Number.isFinite(n) ? n : NaN;
     };
+
     const money = n => {
       const x = toNumber(n);
       return Number.isFinite(x)
@@ -102,17 +111,17 @@
       if(!msg){
         debugEl.classList.add('hidden');
         debugEl.textContent = '';
-        return;
+      } else {
+        debugEl.classList.remove('hidden');
+        debugEl.textContent = msg;
       }
-      debugEl.classList.remove('hidden');
-      debugEl.textContent = msg;
     }
 
     function buildIndex(data){
       for(const r of data){
         r.__code  = norm(r[COLS.code]);
         r.__name  = norm(r[COLS.name]);
-        r.__blob  = norm([COLS.code, COLS.name].map(c=>r[c]).join(' '));
+        r.__blob  = norm(`${r[COLS.code]} ${r[COLS.name]}`);
         r.__stock = toNumber(r[COLS.stock]);
         r.__price = toNumber(r[COLS.price]);
       }
@@ -121,27 +130,13 @@
     function query(q){
       const terms = norm(q).split(/\s+/).filter(Boolean);
 
-      if (terms.length === 0) {
-        // Default: only non-zero stock
-        return rows.filter(r => Number.isFinite(r.__stock) && r.__stock > 0);
+      if (!terms.length) {
+        return rows.filter(r => r.__stock > 0);
       }
 
-      const exact = [], others = [];
-      for (const r of rows){
-        const ok = terms.every(t => r.__blob.includes(t) || r.__code.includes(t));
-        if (!ok) continue;
-        if (terms.length===1 && r.__code === terms[0]) exact.push(r); else others.push(r);
-      }
-
-      const first = terms[0]||'';
-      others.sort((a,b)=>{
-        const as = a.__code.startsWith(first) || a.__name.startsWith(first);
-        const bs = b.__code.startsWith(first) || b.__name.startsWith(first);
-        if (as!==bs) return as? -1: 1;
-        return a.__name.localeCompare(b.__name);
-      });
-
-      return exact.concat(others);
+      return rows.filter(r =>
+        terms.every(t => r.__blob.includes(t))
+      );
     }
 
     function render(list){
@@ -150,14 +145,17 @@
         const tr = document.createElement('tr');
         tr.className = 'odd:bg-white even:bg-slate-50';
         tr.innerHTML = `
-          <td class="px-4 py-2 whitespace-nowrap">${r[COLS.code] ?? ''}</td>
-          <td class="px-4 py-2">${r[COLS.name] ?? ''}</td>
-          <td class="px-4 py-2 text-right tabular-nums">${Number.isFinite(r.__stock) ? r.__stock.toLocaleString() : ''}</td>
-          <td class="px-4 py-2 text-right tabular-nums">${money(r[COLS.price])}</td>`;
+          <td class="px-4 py-2">${r[COLS.code] || ''}</td>
+          <td class="px-4 py-2">${r[COLS.name] || ''}</td>
+          <td class="px-4 py-2 text-right">${Number.isFinite(r.__stock) ? r.__stock.toLocaleString() : ''}</td>
+          <td class="px-4 py-2 text-right">${money(r.__price)}</td>
+        `;
         resultsEl.appendChild(tr);
       }
       statusEl.textContent = `${list.length.toLocaleString()} match(es)`;
     }
+
+    /* ================= LOAD CSV (FIXED) ================= */
 
     async function load(){
       try{
@@ -165,41 +163,9 @@
         statusEl.textContent = 'Fetching CSV…';
 
         const res = await fetch(DROPBOX_DIRECT, { cache: "no-store" });
-
-        // If Dropbox returns HTML (login/forbidden), this tells you immediately.
-        if(!res.ok){
-          const body = await res.text().catch(()=> '');
-          throw new Error(`CSV fetch failed: ${res.status} ${res.statusText} | ${body.slice(0,200)}`);
-        }
+        if(!res.ok) throw new Error(`Network error ${res.status}`);
 
         const text = await res.text();
 
-        const parsed = Papa.parse(text, { header:true, skipEmptyLines:true, dynamicTyping:false });
+        const parsed = Papa.parse(text, {
 
-        if (parsed.errors && parsed.errors.length){
-          throw new Error('CSV parse error: ' + parsed.errors[0].message);
-        }
-
-        rows = parsed.data || [];
-        buildIndex(rows);
-
-        statusEl.textContent = `Loaded ${rows.length.toLocaleString()} rows.`;
-        render(query(''));
-      } catch(e){
-        console.error(e);
-        statusEl.textContent = '⚠️ Could not load CSV. Check Dropbox permissions / link.';
-        setDebug(String(e && e.message ? e.message : e).slice(0, 220));
-      }
-    }
-
-    // Search
-    let t=null;
-    searchEl.addEventListener('input', ()=>{
-      clearTimeout(t);
-      t=setTimeout(()=>{ render(query(searchEl.value)); }, 120);
-    });
-
-    load();
-  </script>
-</body>
-</html>
