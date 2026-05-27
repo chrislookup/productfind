@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Stone & Outdoor — Internal Resources</title>
+  <meta name="version" content="1.4.0">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.5.3/papaparse.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -128,6 +129,7 @@
     <div class="sidebar-footer">
       <a href="https://www.stoneoutdoor.com.au" target="_blank" rel="noopener">stoneoutdoor.com.au ↗</a>
       <div style="margin-top:4px;font-size:10px;color:#666">07 3808 4503</div>
+      <div style="margin-top:4px;font-size:9px;color:#555">v1.4.0</div>
     </div>
   </aside>
 
@@ -345,7 +347,7 @@
       document.getElementById('lkPerPallet').textContent=r.no_per_pallet||'—';
       document.getElementById('lkPerM2').textContent=r.no_per_m2||'—';
       document.getElementById('lkPerLm').textContent=r.no_per_lm||'—';
-      document.getElementById('lkWeightPiece').textContent=r.weight_per_piece_kg?r.weight_per_piece_kg+' kg':'—';
+      document.getElementById('lkWeightPiece').textContent=(r.weight_per_piece_kg||r.weight_per_pallet_kg)?((r.weight_per_piece_kg||r.weight_per_pallet_kg)+' kg'):'—';
       // Stock badge
       const st=getStockForSku(r.sku);
       if(st&&Number.isFinite(st.qty)){const c=st.qty>0?'#2e7d32':'#c0392b';document.getElementById('lkStockBadge').innerHTML=`<span style="color:${c};font-weight:600">${st.qty.toLocaleString()} in stock</span>`+(Number.isFinite(st.price)?` · RRP ${money(st.price)}`:'')}
@@ -451,7 +453,7 @@
       const perM2=parseFloat(r.no_per_m2)||0;
       const perLm=parseFloat(r.no_per_lm)||0;
       const perPallet=parseFloat(r.no_per_pallet)||0;
-      const weightPiece=parseFloat(r.weight_per_piece_kg)||0;
+      const weightPiece=parseFloat(r.weight_per_piece_kg||r.weight_per_pallet_kg)||0;
 
       let nv=0,u='',pieces=0;
 
