@@ -1,73 +1,548 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Stone & Outdoor — Product Lookup</title>
+<!-- saved from url=(0045)file:///C:/Users/chris/Downloads/index_4.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stone &amp; Outdoor — Internal Resources</title>
 
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.5.3/papaparse.min.js"></script>
+  <script src="./Stone &amp; Outdoor — Internal Resources_files/saved_resource"></script>
+  <script src="./Stone &amp; Outdoor — Internal Resources_files/papaparse.min.js.download"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link href="./Stone &amp; Outdoor — Internal Resources_files/css2" rel="stylesheet">
 
   <style>
-    body { font-family: system-ui, sans-serif; }
-    .muted { color:#64748b }
-    .card  { background:#fff; border:1px solid #e2e8f0; border-radius:14px; box-shadow:0 1px 2px rgba(0,0,0,.03) }
+    :root {
+      --bg-main: #f5f3f0;
+      --bg-sidebar: #2d2d2d;
+      --bg-sidebar-hover: #3d3d3d;
+      --bg-sidebar-active: #b8860b;
+      --bg-card: #ffffff;
+      --text-primary: #2d2d2d;
+      --text-secondary: #7a7a7a;
+      --text-sidebar: #b8b8b8;
+      --text-sidebar-active: #ffffff;
+      --accent: #b8860b;
+      --accent-hover: #9a7209;
+      --accent-light: #fdf6e3;
+      --border: #e5e0da;
+      --danger: #c0392b;
+      --stone-warm: #d4c5a9;
+      --stone-dark: #8b7d6b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Outfit', system-ui, sans-serif; background: var(--bg-main); color: var(--text-primary); }
+
+    /* Sidebar */
+    .sidebar {
+      position: fixed; top: 0; left: 0; bottom: 0;
+      width: 260px; background: var(--bg-sidebar);
+      display: flex; flex-direction: column;
+      z-index: 50; transition: transform .25s ease;
+    }
+    .sidebar-logo {
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid rgba(255,255,255,.1);
+      text-align: center;
+    }
+    .sidebar-logo img { height: 50px; width: auto; }
+    .sidebar-nav { flex: 1; padding: 12px 10px; display: flex; flex-direction: column; gap: 2px; }
+
+    .nav-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 11px 14px; border-radius: 8px;
+      color: var(--text-sidebar); font-size: 14px; font-weight: 500;
+      cursor: pointer; transition: all .15s ease; text-decoration: none;
+      border: none; background: none; width: 100%; text-align: left;
+    }
+    .nav-item:hover { background: var(--bg-sidebar-hover); color: #fff; }
+    .nav-item.active { background: var(--bg-sidebar-active); color: var(--text-sidebar-active); font-weight: 600; }
+    .nav-item svg { width: 20px; height: 20px; flex-shrink: 0; }
+    .nav-item .ext-badge {
+      margin-left: auto; font-size: 10px; background: rgba(255,255,255,.12);
+      padding: 2px 6px; border-radius: 4px; color: #999;
+    }
+
+    .sidebar-footer {
+      padding: 16px 20px; border-top: 1px solid rgba(255,255,255,.1);
+      font-size: 11px; color: #888; text-align: center;
+    }
+    .sidebar-footer a { color: #aaa; text-decoration: none; }
+    .sidebar-footer a:hover { color: #fff; }
+
+    /* Main */
+    .main { margin-left: 260px; min-height: 100vh; }
+    .page { display: none; padding: 32px; max-width: 1100px; }
+    .page.active { display: block; }
+    .page-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
+    }
+    .page-title { font-size: 22px; font-weight: 700; color: var(--text-primary); }
+    .page-sub { color: var(--text-secondary); font-size: 13px; font-weight: 400; }
+
+    /* Cards */
+    .card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.04);
+    }
+
+    /* Table */
+    .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .data-table thead { background: #faf8f5; }
+    .data-table th { text-align: left; padding: 10px 16px; color: var(--stone-dark); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; border-bottom: 2px solid var(--border); }
+    .data-table td { padding: 10px 16px; border-bottom: 1px solid #f0ece6; }
+    .data-table tbody tr:hover { background: #faf8f5; }
+    .data-table .text-right { text-align: right; }
+
+    /* Form elements */
+    .form-label { display: block; font-size: 12px; font-weight: 600; color: var(--stone-dark); margin-bottom: 5px; text-transform: uppercase; letter-spacing: .4px; }
+    .form-input, .form-select {
+      width: 100%; padding: 9px 12px; border: 1px solid var(--border);
+      border-radius: 6px; font-size: 14px; font-family: inherit;
+      transition: border-color .15s, box-shadow .15s;
+      background: #fff;
+    }
+    .form-input:focus, .form-select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(184,134,11,.1); }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 9px 18px; border-radius: 6px; font-size: 13px; font-weight: 600;
+      border: none; cursor: pointer; font-family: inherit; transition: all .15s;
+    }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-secondary { background: #f0ece6; color: var(--text-primary); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: #e5e0da; }
+    .btn-danger { background: #fdf0ef; color: var(--danger); border: 1px solid #f0c4c0; }
+    .btn-danger:hover { background: #fbe3e1; }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+    /* Results card */
+    .result-box {
+      background: linear-gradient(135deg, var(--accent-light) 0%, #fef9ec 100%);
+      border: 1px solid var(--stone-warm); border-radius: 10px; padding: 18px;
+    }
+    .result-number { font-size: 30px; font-weight: 700; color: #8b6914; }
+    .result-label { font-size: 12px; color: var(--stone-dark); font-weight: 500; margin-bottom: 2px; text-transform: uppercase; letter-spacing: .3px; }
+
+    /* Area rows */
+    .area-row {
+      display: grid; grid-template-columns: 50px 1.2fr 1fr 1fr auto 1fr auto;
+      gap: 10px; align-items: end; padding: 12px 0;
+      border-bottom: 1px solid #f0ece6;
+    }
+    .area-row:last-child { border-bottom: none; }
+    .area-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 30px; height: 30px; border-radius: 6px; font-size: 12px; font-weight: 700;
+    }
+    .area-badge.add { background: #e8f5e9; color: #2e7d32; }
+    .area-badge.sub { background: #fbe3e1; color: var(--danger); }
+    .or-divider {
+      font-size: 12px; font-weight: 600; color: var(--text-secondary);
+      padding-bottom: 10px; text-align: center;
+    }
+    .dim-faded input { opacity: .3; }
+    .m2-faded input { opacity: .3; }
+
+    .remove-btn {
+      width: 30px; height: 30px; border-radius: 6px; border: 1px solid var(--border);
+      background: #fff; cursor: pointer; display: flex; align-items: center;
+      justify-content: center; color: #aaa; transition: all .15s;
+    }
+    .remove-btn:hover { background: #fbe3e1; color: var(--danger); border-color: #f0c4c0; }
+
+    /* Print button */
+    .btn-print { background: var(--bg-sidebar); color: #fff; }
+    .btn-print:hover { background: #444; }
+
+    /* Mobile */
+    .mobile-header { display: none; }
+    .overlay { display: none; }
+
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; }
+      .page { padding: 16px; }
+      .mobile-header {
+        display: flex; align-items: center; gap: 12px;
+        padding: 12px 16px; background: var(--bg-sidebar);
+        position: sticky; top: 0; z-index: 40;
+      }
+      .hamburger { background: none; border: none; color: #fff; cursor: pointer; padding: 4px; }
+      .hamburger svg { width: 24px; height: 24px; }
+      .mobile-header span { color: #fff; font-weight: 600; font-size: 15px; }
+      .overlay.open { display: block; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 45; }
+      .area-row { grid-template-columns: 40px 1fr 1fr 1fr auto 1fr auto; gap: 6px; font-size: 12px; }
+    }
+
+    /* ==================== PRINT STYLES ==================== */
+    @media print {
+      body { background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .sidebar, .mobile-header, .overlay, .btn-print, .no-print { display: none !important; }
+      .main { margin-left: 0; }
+      .page { display: none !important; padding: 0; max-width: 100%; }
+      .page.print-target { display: block !important; }
+      .card { box-shadow: none; border: 1px solid #ddd; break-inside: avoid; }
+      .result-box { break-inside: avoid; }
+
+      .print-header {
+        display: flex !important; align-items: center; gap: 16px;
+        padding-bottom: 16px; margin-bottom: 20px;
+        border-bottom: 2px solid var(--accent);
+      }
+      .print-header img { height: 45px; }
+      .print-header .print-title { font-size: 18px; font-weight: 700; }
+      .print-header .print-date { font-size: 11px; color: #999; margin-left: auto; }
+    }
+    @media not print {
+      .print-header { display: none !important; }
+    }
   </style>
-</head>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.text-right{text-align:right}</style></head>
 
-<body class="bg-slate-50 text-slate-800">
-  <div class="max-w-6xl mx-auto p-6 space-y-6">
+<body>
 
-    <!-- Header -->
-    <div class="flex items-center justify-between gap-6">
-      <a href="https://www.stoneoutdoor.com.au" target="_blank" rel="noopener">
-        <img src="logo.png" alt="Stone & Outdoor" class="h-28 md:h-36 w-auto"/>
-      </a>
-      <a href="https://www.stoneoutdoor.com.au" target="_blank" rel="noopener"
-         class="text-sm text-blue-600 hover:underline whitespace-nowrap">
-        stoneoutdoor.com.au
-      </a>
-    </div>
-
-    <!-- Delivery map -->
-    <div class="flex justify-start">
-      <a href="https://www.google.com/maps/d/viewer?mid=1kHa9XVylzNZxV5f7ioo60CvtU1HscAY2"
-         target="_blank" rel="noopener"
-         class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5Z"/>
-        </svg>
-        Delivery Zone Map & Price Lookup
-      </a>
-    </div>
-
-    <!-- Search -->
-    <div class="card p-4">
-      <input id="search" type="text"
-             placeholder="Search by name/description or SKU…"
-             class="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500">
-      <div id="status" class="text-sm muted mt-2">Loading latest data…</div>
-    </div>
-
-    <!-- Results -->
-    <div class="overflow-x-auto card">
-      <table class="min-w-full text-sm">
-        <thead class="bg-slate-100 text-slate-600">
-          <tr>
-            <th class="text-left px-4 py-2">SKU</th>
-            <th class="text-left px-4 py-2">Name / Description</th>
-            <th class="text-right px-4 py-2">Stock</th>
-            <th class="text-right px-4 py-2">RRP</th>
-          </tr>
-        </thead>
-        <tbody id="results"></tbody>
-      </table>
-    </div>
-
+  <!-- Mobile header -->
+  <div class="mobile-header">
+    <button class="hamburger" onclick="toggleSidebar()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"></path></svg>
+    </button>
+    <span>Stone &amp; Outdoor — Resources</span>
   </div>
+  <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <a href="https://www.stoneoutdoor.com.au/" target="_blank" rel="noopener">
+        <img src="file:///C:/Users/chris/Downloads/logo.png" alt="Stone &amp; Outdoor" style="filter: brightness(0) invert(1); opacity:.9;">
+      </a>
+      <div style="color:#888; font-size:10px; margin-top:8px; letter-spacing:1px; text-transform:uppercase;">Nuway Internal Resources</div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-item" onclick="showPage(&#39;stock&#39;)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+        Stock Checker
+      </button>
+
+      <a class="nav-item" href="https://www.google.com/maps/d/viewer?mid=1kHa9XVylzNZxV5f7ioo60CvtU1HscAY2" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+        Delivery Zone Map
+        <span class="ext-badge">↗</span>
+      </a>
+
+      <button class="nav-item active" onclick="showPage(&#39;calculator&#39;)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="8" y1="10" x2="10" y2="10"></line><line x1="14" y1="10" x2="16" y2="10"></line><line x1="8" y1="14" x2="10" y2="14"></line><line x1="14" y1="14" x2="16" y2="14"></line><line x1="8" y1="18" x2="10" y2="18"></line><line x1="14" y1="18" x2="16" y2="18"></line></svg>
+        Qty Calculator
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="https://www.stoneoutdoor.com.au/" target="_blank" rel="noopener">stoneoutdoor.com.au ↗</a>
+      <div style="margin-top:4px; font-size:10px; color:#666;">07 3808 4503</div>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <div class="main">
+
+    <!-- ==================== PAGE: STOCK CHECKER ==================== -->
+    <div class="page" id="page-stock">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Stock Checker</h1>
+          <p class="page-sub">Search Stone &amp; Outdoor inventory by name, description, or SKU.</p>
+        </div>
+      </div>
+
+      <div class="card" style="padding:16px; margin-bottom:20px;">
+        <input id="search" type="text" class="form-input" placeholder="Search by name/description or SKU…" style="font-size:15px;">
+        <div id="status" style="font-size:13px; color:var(--text-secondary); margin-top:8px;">6 match(es)</div>
+      </div>
+
+      <div class="card" style="overflow-x:auto;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>SKU</th>
+              <th>Name / Description</th>
+              <th class="text-right">Stock</th>
+              <th class="text-right">RRP</th>
+            </tr>
+          </thead>
+          <tbody id="results"><tr>
+          <td style="font-family:monospace;font-size:12px;">N280</td>
+          <td>CRAZYPAVE SNOWFALL MARBLE TUMBLED 30MM</td>
+          <td class="text-right" style="color:#c0392b">0</td>
+          <td class="text-right">$84.95</td></tr><tr>
+          <td style="font-family:monospace;font-size:12px;">N5298</td>
+          <td>PEBBLE NUWAY SNOW WHITE TUMBLED 20-30MM</td>
+          <td class="text-right" style="color:#2e7d32;font-weight:600">3,957</td>
+          <td class="text-right">$25.95</td></tr><tr>
+          <td style="font-family:monospace;font-size:12px;">N7106</td>
+          <td>PEBBLE NUWAY SNOW WHITE TUMBLED 30-50MM</td>
+          <td class="text-right" style="color:#2e7d32;font-weight:600">1,560</td>
+          <td class="text-right">$25.95</td></tr><tr>
+          <td style="font-family:monospace;font-size:12px;">N7108</td>
+          <td>PEBBLE NUWAY SNOW WHITE TUMBLED 50-80MM</td>
+          <td class="text-right" style="color:#2e7d32;font-weight:600">1,797</td>
+          <td class="text-right">$29.95</td></tr><tr>
+          <td style="font-family:monospace;font-size:12px;">N724</td>
+          <td>CRAZYPAVE SNOWFALL MARBLE 30MM P/LAYER</td>
+          <td class="text-right" style="color:#2e7d32;font-weight:600">285</td>
+          <td class="text-right">$78.15</td></tr><tr>
+          <td style="font-family:monospace;font-size:12px;">N725</td>
+          <td>PEBBLE NUWAY SNOW WHITE TUMBLED 5-10MM</td>
+          <td class="text-right" style="color:#2e7d32;font-weight:600">2,772</td>
+          <td class="text-right">$25.95</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ==================== PAGE: QTY CALCULATOR ==================== -->
+    <div class="page active" id="page-calculator">
+
+      <!-- Print header (only shows when printing) -->
+      <div class="print-header">
+        <img src="file:///C:/Users/chris/Downloads/logo.png" alt="Stone &amp; Outdoor">
+        <div>
+          <div class="print-title">Quantity Calculator</div>
+          <div style="font-size:12px; color:#999;">Stone &amp; Outdoor — Internal Resource</div>
+        </div>
+        <div class="print-date" id="printDate">27 May 2026 at 02:11 pm</div>
+      </div>
+
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Quantity Calculator</h1>
+          <p class="page-sub">Calculate pieces required for area (m²) or lineal metre coverage.</p>
+        </div>
+        <button class="btn btn-print no-print" onclick="printCalc()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+          Print
+        </button>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px;">
+
+        <!-- Calc mode -->
+        <div class="card" style="padding:16px;">
+          <label class="form-label">Calculation Type</label>
+          <select id="calcMode" class="form-select" onchange="onCalcModeChange()">
+            <option value="area">Area (m²) → Pieces</option>
+            <option value="lineal">Lineal Metres → Pieces (Pool Copings)</option>
+          </select>
+        </div>
+
+        <!-- Tile size -->
+        <div class="card" style="padding:16px;">
+          <label class="form-label" id="tileSizeLabel">Tile / Paver Size</label>
+          <select id="tileSize" class="form-select" onchange="onTileSizeChange()">
+            <optgroup label="Standard Sizes">
+              <option value="100x100" style="">100 × 100 mm</option>
+              <option value="200x50" style="">200 × 50 mm</option>
+              <option value="200x100" style="">200 × 100 mm</option>
+              <option value="400x400" selected="">400 × 400 mm</option>
+              <option value="406x406">406 × 406 mm (16"×16")</option>
+              <option value="600x400">600 × 400 mm</option>
+              <option value="610x406">610 × 406 mm (24"×16")</option>
+              <option value="600x600" style="">600 × 600 mm</option>
+            </optgroup>
+            <optgroup label="French Patterns" style="">
+              <option value="french_metric" style="">French Pattern — Metric (1.389 sets/m²)</option>
+              <option value="french_imperial" style="">French Pattern — Imperial (1.35 sets/m²)</option>
+            </optgroup>
+            <optgroup label="Custom">
+              <option value="custom">Custom Size…</option>
+            </optgroup>
+          </select>
+          <div id="customSizeRow" style="display:none; margin-top:10px; gap:10px;">
+            <div style="flex:1;">
+              <label class="form-label" style="font-size:10px;">Length (mm)</label>
+              <input type="number" id="customL" class="form-input" placeholder="e.g. 600" min="1">
+            </div>
+            <div style="flex:1;">
+              <label class="form-label" style="font-size:10px;">Width (mm)</label>
+              <input type="number" id="customW" class="form-input" placeholder="e.g. 300" min="1">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Wastage -->
+      <div class="card" style="padding:16px; margin-bottom:20px;">
+        <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+          <label class="form-label" style="margin-bottom:0;">Wastage %</label>
+          <input type="range" id="wastageSlider" min="0" max="25" value="10" style="flex:1; min-width:120px; accent-color:var(--accent);" oninput="document.getElementById(&#39;wastageVal&#39;).textContent=this.value+&#39;%&#39;; calculate();">
+          <span id="wastageVal" style="font-weight:700; color:var(--accent); min-width:36px;">10%</span>
+        </div>
+      </div>
+
+      <!-- AREA input section -->
+      <div id="areaSection" style="display: block;">
+        <div class="card" style="padding:16px; margin-bottom:20px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <label class="form-label" style="margin-bottom:0;">Areas</label>
+            <div style="display:flex; gap:6px;" class="no-print">
+              <button class="btn btn-primary btn-sm" onclick="addArea(&#39;add&#39;)">+ Add Area</button>
+              <button class="btn btn-danger btn-sm" onclick="addArea(&#39;sub&#39;)">− Cutout</button>
+            </div>
+          </div>
+          <div id="areaRows"><div class="area-row" data-area-id="1">
+          <div>
+            <span class="area-badge add">+</span>
+          </div>
+          <div>
+            <label class="form-label" style="font-size:10px;">Label</label>
+            <input type="text" class="form-input" placeholder="e.g. Patio" value="carport" data-field="label" data-id="1">
+          </div>
+          <div class="">
+            <label class="form-label" style="font-size:10px;">Length (m)</label>
+            <input type="number" class="form-input" placeholder="0.00" min="0" step="0.01" value="5" data-field="length" data-id="1">
+          </div>
+          <div class="">
+            <label class="form-label" style="font-size:10px;">Width (m)</label>
+            <input type="number" class="form-input" placeholder="0.00" min="0" step="0.01" value="10" data-field="width" data-id="1">
+          </div>
+          <div class="or-divider">or</div>
+          <div class="m2-faded">
+            <label class="form-label" style="font-size:10px;">m²</label>
+            <input type="number" class="form-input" placeholder="0.00" min="0" step="0.01" value="" data-field="directM2" data-id="1">
+          </div>
+          <div class="no-print">
+            <button class="remove-btn" onclick="removeArea(1)" title="Remove">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          </div></div><div class="area-row" data-area-id="2">
+          <div>
+            <span class="area-badge add">+</span>
+          </div>
+          <div>
+            <label class="form-label" style="font-size:10px;">Label</label>
+            <input type="text" class="form-input" placeholder="e.g. Patio" value="pool yard" data-field="label" data-id="2">
+          </div>
+          <div class="">
+            <label class="form-label" style="font-size:10px;">Length (m)</label>
+            <input type="number" class="form-input" placeholder="0.00" min="0" step="0.01" value="10" data-field="length" data-id="2">
+          </div>
+          <div class="">
+            <label class="form-label" style="font-size:10px;">Width (m)</label>
+            <input type="number" class="form-input" placeholder="0.00" min="0" step="0.01" value="10" data-field="width" data-id="2">
+          </div>
+          <div class="or-divider">or</div>
+          <div class="m2-faded">
+            <label class="form-label" style="font-size:10px;">m²</label>
+            <input type="number" class="form-input" placeholder="0.00" min="0" step="0.01" value="" data-field="directM2" data-id="2">
+          </div>
+          <div class="no-print">
+            <button class="remove-btn" onclick="removeArea(2)" title="Remove">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          </div></div><div class="area-row" data-area-id="4">
+          <div>
+            <span class="area-badge sub">−</span>
+          </div>
+          <div>
+            <label class="form-label" style="font-size:10px;">Label</label>
+            <input type="text" class="form-input" placeholder="e.g. Patio" value="" data-field="label" data-id="4">
+          </div>
+          <div class="">
+            <label class="form-label" style="font-size:10px;">Length (m)</label>
+            <input type="number" class="form-input" placeholder="0.00" min="0" step="0.01" value="" data-field="length" data-id="4">
+          </div>
+          <div class="">
+            <label class="form-label" style="font-size:10px;">Width (m)</label>
+            <input type="number" class="form-input" placeholder="0.00" min="0" step="0.01" value="" data-field="width" data-id="4">
+          </div>
+          <div class="or-divider">or</div>
+          <div class="m2-faded">
+            <label class="form-label" style="font-size:10px;">m²</label>
+            <input type="number" class="form-input" placeholder="0.00" min="0" step="0.01" value="" data-field="directM2" data-id="4">
+          </div>
+          <div class="no-print">
+            <button class="remove-btn" onclick="removeArea(4)" title="Remove">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          </div></div></div>
+        </div>
+      </div>
+
+      <!-- LINEAL input section -->
+      <div id="linealSection" style="display: none;">
+        <div class="card" style="padding:16px; margin-bottom:20px;">
+          <label class="form-label">Total Lineal Metres</label>
+          <input type="number" id="linealInput" class="form-input" placeholder="e.g. 24.5" min="0" step="0.01" oninput="calculate()" style="max-width:300px;">
+          <div style="font-size:11px; color:var(--text-secondary); margin-top:4px;">
+            Coping pieces assumed laid lengthways (longest dimension along the edge).
+          </div>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div id="calcResults" style="">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:14px;">
+          <div class="result-box">
+            <div class="result-label">Net Coverage</div>
+            <div class="result-number" id="resNetVal">125.00 m²</div>
+          </div>
+          <div class="result-box">
+            <div class="result-label">Incl. Wastage</div>
+            <div class="result-number" id="resGrossVal">137.50 m²</div>
+          </div>
+          <div class="result-box">
+            <div class="result-label" id="resPiecesLabel">Pieces Required</div>
+            <div class="result-number" id="resPiecesVal">860</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
 
   <script>
-    /* ================= CONFIG ================= */
+    /* ==================== NAVIGATION ==================== */
+
+    function showPage(id) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById('page-' + id).classList.add('active');
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => {
+        if (n.getAttribute('onclick') === `showPage('${id}')`) n.classList.add('active');
+      });
+      if (window.innerWidth <= 768) toggleSidebar(false);
+    }
+
+    function toggleSidebar(force) {
+      const sb = document.getElementById('sidebar');
+      const ov = document.getElementById('overlay');
+      const open = force !== undefined ? force : !sb.classList.contains('open');
+      sb.classList.toggle('open', open);
+      ov.classList.toggle('open', open);
+    }
+
+    /* ==================== PRINT ==================== */
+
+    function printCalc() {
+      // Set print date
+      document.getElementById('printDate').textContent = new Date().toLocaleDateString('en-AU', {
+        day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
+      });
+      // Mark calculator page as print target
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('print-target'));
+      document.getElementById('page-calculator').classList.add('print-target');
+      window.print();
+      // Clean up after print
+      setTimeout(() => {
+        document.getElementById('page-calculator').classList.remove('print-target');
+      }, 500);
+    }
+
+    /* ==================== STOCK CHECKER ==================== */
 
     const DROPBOX_SHARE =
       "https://www.dropbox.com/scl/fi/jg9pssmaw0gdogvjps1ii/lookup_summary.csv?rlkey=wu659zpoqfjty6f3ab9ryv2h3&dl=0";
@@ -77,138 +552,331 @@
       u.searchParams.delete("st");
       u.searchParams.set("dl", "1");
       const v1 = u.toString();
-
       const u2 = new URL(v1);
       u2.hostname = "dl.dropboxusercontent.com";
       const v2 = u2.toString();
-
       const u3 = new URL(v2);
       u3.searchParams.delete("dl");
       const v3 = u3.toString();
-
       return [v2, v3, v1];
     })();
 
-    const COLS = {
-      code:  "barcode",
-      name:  "description",
-      stock: "available_qty",
-      price: "sell_inc"
-    };
-
-    /* ================= DOM ================= */
-
+    const COLS = { code: "barcode", name: "description", stock: "available_qty", price: "sell_inc" };
     const statusEl  = document.getElementById('status');
     const resultsEl = document.getElementById('results');
     const searchEl  = document.getElementById('search');
 
-    /* ================= STATE ================= */
-
     let rows = [];
 
-    /* ================= HELPERS ================= */
+    const norm = v => (v == null ? '' : String(v)).toLowerCase().trim();
+    const toNumber = v => { const n = parseFloat(String(v).replace(/[,\s]/g, '')); return Number.isFinite(n) ? n : NaN; };
+    const money = n => { const x = toNumber(n); return Number.isFinite(x) ? new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' }).format(x) : ''; };
 
-    const norm = v => (v==null ? '' : String(v)).toLowerCase().trim();
-
-    const toNumber = v => {
-      const n = parseFloat(String(v).replace(/[,\s]/g,''));
-      return Number.isFinite(n) ? n : NaN;
-    };
-
-    const money = n => {
-      const x = toNumber(n);
-      return Number.isFinite(x)
-        ? new Intl.NumberFormat('en-AU',{style:'currency',currency:'AUD'}).format(x)
-        : '';
-    };
-
-    function buildIndex(data){
-      for(const r of data){
-        r.__code  = norm(r[COLS.code]);
-        r.__name  = norm(r[COLS.name]);
-        r.__blob  = norm(`${r[COLS.code] ?? ''} ${r[COLS.name] ?? ''}`);
+    function buildIndex(data) {
+      for (const r of data) {
+        r.__code = norm(r[COLS.code]);
+        r.__name = norm(r[COLS.name]);
+        r.__blob = norm(`${r[COLS.code] ?? ''} ${r[COLS.name] ?? ''}`);
         r.__stock = toNumber(r[COLS.stock]);
         r.__price = toNumber(r[COLS.price]);
       }
     }
 
-    function query(q){
+    function stockQuery(q) {
       const terms = norm(q).split(/\s+/).filter(Boolean);
-
-      if (!terms.length) {
-        return rows.filter(r => r.__stock > 0);
-      }
-
-      return rows.filter(r =>
-        terms.every(t => r.__blob.includes(t) || r.__code.includes(t))
-      );
+      if (!terms.length) return rows.filter(r => r.__stock > 0);
+      return rows.filter(r => terms.every(t => r.__blob.includes(t) || r.__code.includes(t)));
     }
 
-    function render(list){
+    function renderStock(list) {
       resultsEl.innerHTML = '';
-      for(const r of list){
+      for (const r of list) {
         const tr = document.createElement('tr');
-        tr.className = 'odd:bg-white even:bg-slate-50';
+        const stockVal = Number.isFinite(r.__stock) ? r.__stock : 0;
+        const stockColor = stockVal > 0 ? 'color:#2e7d32;font-weight:600' : 'color:#c0392b';
         tr.innerHTML = `
-          <td class="px-4 py-2">${r[COLS.code] || ''}</td>
-          <td class="px-4 py-2">${r[COLS.name] || ''}</td>
-          <td class="px-4 py-2 text-right">${Number.isFinite(r.__stock) ? r.__stock.toLocaleString() : ''}</td>
-          <td class="px-4 py-2 text-right">${money(r.__price)}</td>
-        `;
+          <td style="font-family:monospace;font-size:12px;">${r[COLS.code] || ''}</td>
+          <td>${r[COLS.name] || ''}</td>
+          <td class="text-right" style="${stockColor}">${Number.isFinite(r.__stock) ? r.__stock.toLocaleString() : ''}</td>
+          <td class="text-right">${money(r.__price)}</td>`;
         resultsEl.appendChild(tr);
       }
       statusEl.textContent = `${list.length.toLocaleString()} match(es)`;
     }
 
-    async function fetchCsv(url){
+    async function fetchCsv(url) {
       const res = await fetch(url, { cache: "no-store" });
-      if(!res.ok) throw new Error('Fetch failed');
+      if (!res.ok) throw new Error('Fetch failed');
       const text = await res.text();
-      if (/<!doctype html>|<html/i.test(text.slice(0,300))) {
-        throw new Error('HTML returned instead of CSV');
-      }
+      if (/<!doctype html>|<html/i.test(text.slice(0, 300))) throw new Error('HTML returned');
       return text;
     }
 
-    async function load(){
+    async function loadStock() {
       statusEl.textContent = 'Loading latest data…';
-
-      for (const url of CSV_URLS){
-        try{
+      for (const url of CSV_URLS) {
+        try {
           const text = await fetchCsv(url);
-
-          const parsed = Papa.parse(text, {
-            header: true,
-            skipEmptyLines: "greedy",
-            dynamicTyping: false
-          });
-
-          // Ignore ALL CSV warnings silently
-          rows = (parsed.data || []).filter(r =>
-            r && (r[COLS.code] || r[COLS.name])
-          );
-
+          const parsed = Papa.parse(text, { header: true, skipEmptyLines: "greedy", dynamicTyping: false });
+          rows = (parsed.data || []).filter(r => r && (r[COLS.code] || r[COLS.name]));
           buildIndex(rows);
-          render(query(''));
-
+          renderStock(stockQuery(''));
           statusEl.textContent = `Loaded ${rows.length.toLocaleString()} products`;
           return;
-
-        } catch (e){
-          console.warn('CSV attempt failed:', url, e);
-        }
+        } catch (e) { console.warn('CSV attempt failed:', url, e); }
       }
-
       statusEl.textContent = '⚠️ Could not load product data';
     }
 
     let debounce;
     searchEl.addEventListener('input', () => {
       clearTimeout(debounce);
-      debounce = setTimeout(() => render(query(searchEl.value)), 120);
+      debounce = setTimeout(() => renderStock(stockQuery(searchEl.value)), 120);
     });
 
-    load();
+    loadStock();
+
+    /* ==================== QUANTITY CALCULATOR ==================== */
+
+    const TILE_SIZES = {
+      '100x100': [100, 100], '200x50': [200, 50], '200x100': [200, 100],
+      '400x400': [400, 400], '406x406': [406, 406], '600x400': [600, 400],
+      '610x406': [610, 406], '600x600': [600, 600],
+      'french_metric': null, 'french_imperial': null, 'custom': null,
+    };
+
+    const FRENCH_RATES = { 'french_metric': 1.389, 'french_imperial': 1.35 };
+
+    let areas = [];
+    let areaCounter = 0;
+
+    function addArea(type) {
+      areaCounter++;
+      areas.push({ id: areaCounter, type, label: '', length: '', width: '', directM2: '' });
+      renderAreas();
+    }
+
+    function removeArea(id) {
+      areas = areas.filter(a => a.id !== id);
+      renderAreas();
+      calculate();
+    }
+
+    function renderAreas() {
+      const container = document.getElementById('areaRows');
+      container.innerHTML = '';
+
+      if (areas.length === 0) {
+        container.innerHTML = '<div style="color:var(--text-secondary);font-size:13px;padding:12px 0;">Click "+ Add Area" to get started.</div>';
+        return;
+      }
+
+      for (const a of areas) {
+        const div = document.createElement('div');
+        div.className = 'area-row';
+        div.dataset.areaId = a.id;
+
+        const hasDims = !!(a.length || a.width);
+        const hasDirect = !!a.directM2;
+
+        div.innerHTML = `
+          <div>
+            <span class="area-badge ${a.type}">${a.type === 'add' ? '+' : '−'}</span>
+          </div>
+          <div>
+            <label class="form-label" style="font-size:10px;">Label</label>
+            <input type="text" class="form-input" placeholder="e.g. Patio" value="${a.label || ''}"
+                   data-field="label" data-id="${a.id}">
+          </div>
+          <div class="${hasDirect ? 'dim-faded' : ''}">
+            <label class="form-label" style="font-size:10px;">Length (m)</label>
+            <input type="number" class="form-input" placeholder="0.00" min="0" step="0.01"
+                   value="${a.length}" data-field="length" data-id="${a.id}">
+          </div>
+          <div class="${hasDirect ? 'dim-faded' : ''}">
+            <label class="form-label" style="font-size:10px;">Width (m)</label>
+            <input type="number" class="form-input" placeholder="0.00" min="0" step="0.01"
+                   value="${a.width}" data-field="width" data-id="${a.id}">
+          </div>
+          <div class="or-divider">or</div>
+          <div class="${hasDims ? 'm2-faded' : ''}">
+            <label class="form-label" style="font-size:10px;">m²</label>
+            <input type="number" class="form-input" placeholder="0.00" min="0" step="0.01"
+                   value="${a.directM2 || ''}" data-field="directM2" data-id="${a.id}">
+          </div>
+          <div class="no-print">
+            <button class="remove-btn" onclick="removeArea(${a.id})" title="Remove">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>`;
+
+        div.addEventListener('input', handleAreaInput);
+        container.appendChild(div);
+      }
+    }
+
+    function handleAreaInput(e) {
+      const input = e.target;
+      if (!input.dataset.field) return;
+
+      const id = parseInt(input.dataset.id);
+      const field = input.dataset.field;
+      const value = input.value;
+      const a = areas.find(x => x.id === id);
+      if (!a) return;
+
+      a[field] = value;
+      const row = input.closest('.area-row');
+
+      if (field === 'length' || field === 'width') {
+        const hasDims = !!(a.length || a.width);
+        if (hasDims && a.directM2) {
+          a.directM2 = '';
+          const m2Input = row.querySelector('[data-field="directM2"]');
+          if (m2Input) m2Input.value = '';
+        }
+        updateRowFading(row, a);
+      } else if (field === 'directM2') {
+        if (value && (a.length || a.width)) {
+          a.length = '';
+          a.width = '';
+          const lInput = row.querySelector('[data-field="length"]');
+          const wInput = row.querySelector('[data-field="width"]');
+          if (lInput) lInput.value = '';
+          if (wInput) wInput.value = '';
+        }
+        updateRowFading(row, a);
+      }
+
+      calculate();
+    }
+
+    function updateRowFading(row, a) {
+      const hasDims = !!(a.length || a.width);
+      const hasDirect = !!a.directM2;
+      const cells = row.children;
+      cells[2].className = hasDirect ? 'dim-faded' : '';
+      cells[3].className = hasDirect ? 'dim-faded' : '';
+      cells[5].className = hasDims ? 'm2-faded' : '';
+    }
+
+    function onCalcModeChange() {
+      const mode = document.getElementById('calcMode').value;
+      document.getElementById('areaSection').style.display = mode === 'area' ? 'block' : 'none';
+      document.getElementById('linealSection').style.display = mode === 'lineal' ? 'block' : 'none';
+
+      const copingSizes = ['400x400', '406x406', '600x400', '610x406', 'custom'];
+      const opts = document.querySelectorAll('#tileSize option');
+      opts.forEach(opt => {
+        if (mode === 'lineal') {
+          const isAllowed = copingSizes.includes(opt.value);
+          opt.style.display = isAllowed ? '' : 'none';
+          if (opt.selected && !isAllowed) document.getElementById('tileSize').value = '400x400';
+        } else {
+          opt.style.display = '';
+        }
+      });
+      document.querySelectorAll('#tileSize optgroup').forEach(og => {
+        const visible = [...og.querySelectorAll('option')].some(o => o.style.display !== 'none');
+        og.style.display = visible ? '' : 'none';
+      });
+
+      onTileSizeChange();
+      calculate();
+    }
+
+    function onTileSizeChange() {
+      const val = document.getElementById('tileSize').value;
+      document.getElementById('customSizeRow').style.display = val === 'custom' ? 'flex' : 'none';
+      calculate();
+    }
+
+    function getTileDimensions() {
+      const val = document.getElementById('tileSize').value;
+      if (val === 'custom') {
+        const l = parseFloat(document.getElementById('customL').value);
+        const w = parseFloat(document.getElementById('customW').value);
+        if (l > 0 && w > 0) return { type: 'standard', dims: [l, w] };
+        return null;
+      }
+      if (FRENCH_RATES[val]) return { type: 'french', rate: FRENCH_RATES[val], key: val };
+      const dims = TILE_SIZES[val];
+      if (dims) return { type: 'standard', dims };
+      return null;
+    }
+
+    function calculate() {
+      const mode = document.getElementById('calcMode').value;
+      const wastage = parseInt(document.getElementById('wastageSlider').value) / 100;
+      const tile = getTileDimensions();
+      const resultsDiv = document.getElementById('calcResults');
+
+      if (!tile) { resultsDiv.style.display = 'none'; return; }
+
+      let netQty = 0;
+      let unitLabel = '';
+      let netValue = 0;
+      let unit = '';
+
+      if (mode === 'area') {
+        unit = 'm²';
+        for (const a of areas) {
+          let rowM2 = 0;
+          const direct = parseFloat(a.directM2) || 0;
+          if (direct > 0) {
+            rowM2 = direct;
+          } else {
+            const l = parseFloat(a.length) || 0;
+            const w = parseFloat(a.width) || 0;
+            rowM2 = l * w;
+          }
+          if (a.type === 'add') netValue += rowM2;
+          else netValue -= rowM2;
+        }
+        netValue = Math.max(0, netValue);
+
+        if (netValue === 0) { resultsDiv.style.display = 'none'; return; }
+
+        const grossValue = netValue * (1 + wastage);
+        document.getElementById('resNetVal').textContent = netValue.toFixed(2) + ' ' + unit;
+        document.getElementById('resGrossVal').textContent = grossValue.toFixed(2) + ' ' + unit;
+
+        if (tile.type === 'french') {
+          netQty = Math.ceil(grossValue * tile.rate);
+          unitLabel = 'Sets Required';
+        } else {
+          const tileM2 = (tile.dims[0] / 1000) * (tile.dims[1] / 1000);
+          netQty = Math.ceil(grossValue / tileM2);
+          unitLabel = 'Pieces Required';
+        }
+
+      } else {
+        unit = 'lm';
+        netValue = parseFloat(document.getElementById('linealInput').value) || 0;
+
+        if (netValue === 0) { resultsDiv.style.display = 'none'; return; }
+
+        const grossValue = netValue * (1 + wastage);
+        document.getElementById('resNetVal').textContent = netValue.toFixed(2) + ' ' + unit;
+        document.getElementById('resGrossVal').textContent = grossValue.toFixed(2) + ' ' + unit;
+
+        const pieceLength = Math.max(tile.dims[0], tile.dims[1]) / 1000;
+        netQty = Math.ceil(grossValue / pieceLength);
+        unitLabel = 'Pieces Required';
+      }
+
+      document.getElementById('resPiecesLabel').textContent = unitLabel;
+      document.getElementById('resPiecesVal').textContent = netQty.toLocaleString();
+      resultsDiv.style.display = '';
+    }
+
+    document.getElementById('customL').addEventListener('input', calculate);
+    document.getElementById('customW').addEventListener('input', calculate);
+
+    // Init with one area row
+    addArea('add');
   </script>
-</body>
-</html>
+
+
+
+</body></html>
