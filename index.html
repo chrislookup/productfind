@@ -157,13 +157,13 @@
       <div class="card" style="padding:16px;margin-bottom:20px">
         <label class="form-label">Calculate By</label>
         <div class="mode-toggle">
-          <button class="mode-btn active" onclick="setCalcMode('dimensions')">Tile Dimensions</button>
-          <button class="mode-btn" onclick="setCalcMode('product')">Product Lookup</button>
+          <button class="mode-btn" onclick="setCalcMode('dimensions')">Tile Dimensions</button>
+          <button class="mode-btn active" onclick="setCalcMode('product')">Product Lookup</button>
         </div>
       </div>
 
       <!-- === DIMENSIONS MODE === -->
-      <div id="dimMode">
+      <div id="dimMode" style="display:none">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
           <div class="card" style="padding:16px">
             <label class="form-label">Measurement Type</label>
@@ -194,7 +194,7 @@
       </div>
 
       <!-- === PRODUCT MODE === -->
-      <div id="prodMode" style="display:none">
+      <div id="prodMode">
         <div class="card" style="padding:16px;margin-bottom:20px">
           <label class="form-label">Search Product</label>
           <div class="lookup-search-wrap">
@@ -362,7 +362,7 @@
     }
 
     /* === CALC MODE TOGGLE === */
-    let calcMode='dimensions'; // 'dimensions' or 'product'
+    let calcMode='product'; // 'dimensions' or 'product'
 
     function setCalcMode(mode){
       calcMode=mode;
@@ -504,6 +504,7 @@
     document.getElementById('customW').addEventListener('input',calcDimensions);
 
     addArea('add');
+    updateInputSections();
     loadStock();
     loadSpecs();
   </script>
