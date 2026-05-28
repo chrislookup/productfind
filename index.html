@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Stone & Outdoor — Internal Resources</title>
-  <meta name="version" content="1.5.0">
+  <meta name="version" content="1.5.2">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.5.3/papaparse.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -116,7 +116,7 @@
       <a class="nav-item" href="https://www.google.com/maps/d/viewer?mid=1kHa9XVylzNZxV5f7ioo60CvtU1HscAY2" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>Delivery Zone Map<span class="ext-badge">↗</span></a>
       <button class="nav-item" onclick="showPage('calculator')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="10" y2="10"/><line x1="14" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="10" y2="14"/><line x1="14" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="10" y2="18"/><line x1="14" y1="18" x2="16" y2="18"/></svg>Qty Calculator</button>
     </nav>
-    <div class="sidebar-footer"><a href="https://www.stoneoutdoor.com.au" target="_blank" rel="noopener">stoneoutdoor.com.au ↗</a><div style="margin-top:4px;font-size:10px;color:#666">07 3808 4503</div><div style="margin-top:4px;font-size:9px;color:#555">v1.5.0</div></div>
+    <div class="sidebar-footer"><a href="https://www.stoneoutdoor.com.au" target="_blank" rel="noopener">stoneoutdoor.com.au ↗</a><div style="margin-top:4px;font-size:10px;color:#666">07 3808 4503</div><div style="margin-top:4px;font-size:9px;color:#555">v1.5.2</div></div>
   </aside>
   <div class="main">
     <!-- STOCK CHECKER -->
@@ -198,6 +198,15 @@ async function loadSpecs(){const t=await fetchCsv(makeDBUrls(DROPBOX_SPECS));if(
   document.querySelectorAll('.lookup-status').forEach(el=>el.textContent=`${specRows.length} products loaded`);
 }
 function searchSpecs(q){const t=norm(q).split(/\s+/).filter(Boolean);if(!t.length)return[];return specRows.filter(r=>t.every(x=>r.__search.includes(x))).slice(0,20)}
+
+function parseLongestEdge(sizeStr){
+  if(!sizeStr)return 0;
+  const s=String(sizeStr).replace(/\*/g,'').toLowerCase();
+  // Match patterns like 600x400x30mm or 400x400x20
+  const m=s.match(/^(\d+)\s*x\s*(\d+)/);
+  if(m){return Math.max(parseInt(m[1]),parseInt(m[2]))}
+  return 0;
+}
 
 /* === CALC MODE === */
 let calcMode='product';
@@ -379,7 +388,8 @@ function calcProdSection(secId){
   }else if(sec.measure==='lm'){
     u='lm';nv=parseFloat(sec.linealVal)||0;if(nv===0){sec.result=null;updateResultsDOM(sec);updateSummary();return}
     const gv=nv*(1+w);netStr=nv.toFixed(2)+' lm';grossStr=gv.toFixed(2)+' lm';
-    if(perLm>0)pieces=Math.ceil(gv*perLm);else if(perM2>0)pieces=Math.ceil(gv*perM2);else{sec.result=null;updateResultsDOM(sec);updateSummary();return}
+    if(perLm>0){pieces=Math.ceil(gv*perLm)}
+    else{const edge=parseLongestEdge(r.size);if(edge>0){pieces=Math.ceil(gv/(edge/1000))}else{sec.result=null;updateResultsDOM(sec);updateSummary();return}}
   }else{
     pieces=Math.ceil(parseFloat(sec.piecesVal)||0);if(!pieces){sec.result=null;updateResultsDOM(sec);updateSummary();return}
     netStr=perM2>0?(pieces/perM2).toFixed(2)+' m²':'—';grossStr='—';
