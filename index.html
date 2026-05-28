@@ -194,7 +194,7 @@ function getStock(sku){if(!sku||!stockRows.length)return null;const s=norm(sku);
 
 /* === SPECS === */
 let specRows=[];
-async function loadSpecs(){const t=await fetchCsv(makeDBUrls(DROPBOX_SPECS));if(!t)return;const p=Papa.parse(t,{header:true,skipEmptyLines:"greedy"});specRows=(p.data||[]).filter(r=>r&&r.sku);for(const r of specRows){r.__search=norm(`${r.sku} ${r.product_name} ${r.size} ${r.finish}`);r.__weightPiece=parseFloat(r.weight_per_piece_kg||r.weight_per_pallet_kg)||0;r.__wastage=parseFloat(r.wastage||r.waste)||0}
+async function loadSpecs(){const t=await fetchCsv(makeDBUrls(DROPBOX_SPECS));if(!t)return;const p=Papa.parse(t,{header:true,skipEmptyLines:"greedy",transformHeader:h=>h.trim()});specRows=(p.data||[]).filter(r=>r&&r.sku);for(const r of specRows){r.__search=norm(`${r.sku} ${r.product_name} ${r.size} ${r.finish}`);r.__weightPiece=parseFloat(r.weight_per_piece_kg||r.weight_per_pallet_kg)||0;const wRaw=r.Wastage||r.wastage||r.waste||'';r.__wastage=parseFloat(String(wRaw).replace('%',''))||0}
   document.querySelectorAll('.lookup-status').forEach(el=>el.textContent=`${specRows.length} products loaded`);
 }
 function searchSpecs(q){const t=norm(q).split(/\s+/).filter(Boolean);if(!t.length)return[];return specRows.filter(r=>t.every(x=>r.__search.includes(x))).slice(0,20)}
@@ -298,11 +298,8 @@ function renderAllProducts(){
       inputHtml=`<div class="card" style="padding:14px;margin-bottom:12px"><label class="form-label">Quantity (Pieces)</label><input type="number" class="form-input prod-pieces" data-sec="${sec.id}" placeholder="e.g. 100" min="0" step="1" value="${sec.piecesVal}" style="max-width:250px"></div>`;
     }
 
-    // Results
+    // Results rendered separately by updateResultsDOM
     let resultHtml='';
-    if(sec.result){const re=sec.result;
-      resultHtml=`<div class="prod-results"><div class="result-box"><div class="result-label">Net</div><div class="result-number">${re.netStr}</div></div><div class="result-box"><div class="result-label">+ Wastage</div><div class="result-number">${re.grossStr}</div></div><div class="result-box"><div class="result-label">Pieces</div><div class="result-number">${re.pieces.toLocaleString()}</div></div><div class="result-box"><div class="result-label">Pallets</div><div class="result-number">${re.pallets}</div></div><div class="result-box"><div class="result-label">Weight</div><div class="result-number">${re.weightStr}</div></div><div class="result-box"><div class="result-label">Stock</div><div class="result-number">${re.stockHtml}</div></div></div>`;
-    }
 
     div.innerHTML=`
       <div class="prod-section-header"><div class="prod-section-title">Product ${prodNum}</div>${prodSections.length>1?`<button class="prod-remove no-print" onclick="removeProductSection(${sec.id})">✕</button>`:''}</div>
@@ -343,6 +340,8 @@ function renderAllProducts(){
     });
     searchInput.addEventListener('keydown',e=>{const opts=dropdown.querySelectorAll('.lookup-option');if(!opts.length)return;if(e.key==='ArrowDown'){e.preventDefault();hlIdx=Math.min(hlIdx+1,opts.length-1);opts.forEach((x,i)=>x.classList.toggle('highlighted',i===hlIdx))}else if(e.key==='ArrowUp'){e.preventDefault();hlIdx=Math.max(hlIdx-1,0);opts.forEach((x,i)=>x.classList.toggle('highlighted',i===hlIdx))}else if(e.key==='Enter'&&hlIdx>=0){e.preventDefault();opts[hlIdx].click()}else if(e.key==='Escape')dropdown.classList.remove('open')});
   });
+  // Restore results for sections that already have them
+  prodSections.forEach(sec=>{if(sec.result)updateResultsDOM(sec)});
   document.addEventListener('click',e=>{if(!e.target.closest('.lookup-search-wrap'))document.querySelectorAll('.lookup-dropdown').forEach(d=>d.classList.remove('open'))});
 }
 
@@ -374,15 +373,15 @@ function calcProdSection(secId){
   let nv=0,u='',pieces=0,netStr='—',grossStr='—';
 
   if(sec.measure==='m2'){
-    u='m²';nv=calcAreaTotal(sec.areas);if(nv===0){sec.result=null;renderAllProducts();updateSummary();return}
+    u='m²';nv=calcAreaTotal(sec.areas);if(nv===0){sec.result=null;updateResultsDOM(sec);updateSummary();return}
     const gv=nv*(1+w);netStr=nv.toFixed(2)+' m²';grossStr=gv.toFixed(2)+' m²';
-    if(perM2>0)pieces=Math.ceil(gv*perM2);else{sec.result=null;renderAllProducts();updateSummary();return}
+    if(perM2>0)pieces=Math.ceil(gv*perM2);else{sec.result=null;updateResultsDOM(sec);updateSummary();return}
   }else if(sec.measure==='lm'){
-    u='lm';nv=parseFloat(sec.linealVal)||0;if(nv===0){sec.result=null;renderAllProducts();updateSummary();return}
+    u='lm';nv=parseFloat(sec.linealVal)||0;if(nv===0){sec.result=null;updateResultsDOM(sec);updateSummary();return}
     const gv=nv*(1+w);netStr=nv.toFixed(2)+' lm';grossStr=gv.toFixed(2)+' lm';
-    if(perLm>0)pieces=Math.ceil(gv*perLm);else if(perM2>0)pieces=Math.ceil(gv*perM2);else{sec.result=null;renderAllProducts();updateSummary();return}
+    if(perLm>0)pieces=Math.ceil(gv*perLm);else if(perM2>0)pieces=Math.ceil(gv*perM2);else{sec.result=null;updateResultsDOM(sec);updateSummary();return}
   }else{
-    pieces=Math.ceil(parseFloat(sec.piecesVal)||0);if(!pieces){sec.result=null;renderAllProducts();updateSummary();return}
+    pieces=Math.ceil(parseFloat(sec.piecesVal)||0);if(!pieces){sec.result=null;updateResultsDOM(sec);updateSummary();return}
     netStr=perM2>0?(pieces/perM2).toFixed(2)+' m²':'—';grossStr='—';
   }
 
@@ -394,8 +393,26 @@ function calcProdSection(secId){
   if(st&&Number.isFinite(st.qty)){const ok=st.qty>=pieces;stockHtml=`<span style="color:${ok?'#2e7d32':'#c0392b'}">${st.qty.toLocaleString()}</span>`}
 
   sec.result={pieces,pallets:pallets>0?pallets.toFixed(1):'—',weightStr:wtStr,weight:totalWt,netStr,grossStr,stockHtml};
-  renderAllProducts();
+  updateResultsDOM(sec);
   updateSummary();
+}
+
+function updateResultsDOM(sec){
+  const container=document.getElementById('prod-'+sec.id);
+  if(!container)return;
+  let resEl=container.querySelector('.prod-results');
+  if(!sec.result){
+    if(resEl)resEl.remove();
+    return;
+  }
+  const re=sec.result;
+  const html=`<div class="result-box"><div class="result-label">Net</div><div class="result-number">${re.netStr}</div></div><div class="result-box"><div class="result-label">+ Wastage</div><div class="result-number">${re.grossStr}</div></div><div class="result-box"><div class="result-label">Pieces</div><div class="result-number">${re.pieces.toLocaleString()}</div></div><div class="result-box"><div class="result-label">Pallets</div><div class="result-number">${re.pallets}</div></div><div class="result-box"><div class="result-label">Weight</div><div class="result-number">${re.weightStr}</div></div><div class="result-box"><div class="result-label">Stock</div><div class="result-number">${re.stockHtml}</div></div>`;
+  if(!resEl){
+    resEl=document.createElement('div');
+    resEl.className='prod-results';
+    container.appendChild(resEl);
+  }
+  resEl.innerHTML=html;
 }
 
 function updateSummary(){
