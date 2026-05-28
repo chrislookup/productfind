@@ -4,18 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Stone & Outdoor — Internal Resources</title>
-  <meta name="version" content="1.4.0">
+  <meta name="version" content="1.5.0">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.5.3/papaparse.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --bg-main:#f5f3f0;--bg-sidebar:#2d2d2d;--bg-sidebar-hover:#3d3d3d;--bg-sidebar-active:#b8860b;
-      --bg-card:#fff;--text-primary:#2d2d2d;--text-secondary:#7a7a7a;--text-sidebar:#b8b8b8;
-      --text-sidebar-active:#fff;--accent:#b8860b;--accent-hover:#9a7209;--accent-light:#fdf6e3;
-      --border:#e5e0da;--danger:#c0392b;--stone-warm:#d4c5a9;--stone-dark:#8b7d6b;
-    }
+    :root{--bg-main:#f5f3f0;--bg-sidebar:#2d2d2d;--bg-sidebar-hover:#3d3d3d;--bg-sidebar-active:#b8860b;--bg-card:#fff;--text-primary:#2d2d2d;--text-secondary:#7a7a7a;--text-sidebar:#b8b8b8;--text-sidebar-active:#fff;--accent:#b8860b;--accent-hover:#9a7209;--accent-light:#fdf6e3;--border:#e5e0da;--danger:#c0392b;--stone-warm:#d4c5a9;--stone-dark:#8b7d6b}
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:'Outfit',system-ui,sans-serif;background:var(--bg-main);color:var(--text-primary)}
     .sidebar{position:fixed;top:0;left:0;bottom:0;width:260px;background:var(--bg-sidebar);display:flex;flex-direction:column;z-index:50;transition:transform .25s ease}
@@ -49,34 +44,45 @@
     .btn-danger{background:#fdf0ef;color:var(--danger);border:1px solid #f0c4c0}.btn-danger:hover{background:#fbe3e1}
     .btn-sm{padding:6px 12px;font-size:12px}
     .btn-print{background:var(--bg-sidebar);color:#fff}.btn-print:hover{background:#444}
-    .result-box{background:linear-gradient(135deg,var(--accent-light) 0%,#fef9ec 100%);border:1px solid var(--stone-warm);border-radius:10px;padding:18px}
-    .result-number{font-size:28px;font-weight:700;color:#8b6914}
-    .result-label{font-size:11px;color:var(--stone-dark);font-weight:500;margin-bottom:2px;text-transform:uppercase;letter-spacing:.3px}
-    .area-row{display:grid;grid-template-columns:50px 1.2fr 1fr 1fr auto 1fr auto;gap:10px;align-items:end;padding:12px 0;border-bottom:1px solid #f0ece6}
+    .result-box{background:linear-gradient(135deg,var(--accent-light) 0%,#fef9ec 100%);border:1px solid var(--stone-warm);border-radius:10px;padding:16px}
+    .result-number{font-size:26px;font-weight:700;color:#8b6914}
+    .result-label{font-size:10px;color:var(--stone-dark);font-weight:500;margin-bottom:2px;text-transform:uppercase;letter-spacing:.3px}
+    .area-row{display:grid;grid-template-columns:50px 1.2fr 1fr 1fr auto 1fr auto;gap:10px;align-items:end;padding:10px 0;border-bottom:1px solid #f0ece6}
     .area-row:last-child{border-bottom:none}
-    .area-badge{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;font-size:12px;font-weight:700}
+    .area-badge{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;font-size:12px;font-weight:700}
     .area-badge.add{background:#e8f5e9;color:#2e7d32}.area-badge.sub{background:#fbe3e1;color:var(--danger)}
     .or-divider{font-size:12px;font-weight:600;color:var(--text-secondary);padding-bottom:10px;text-align:center}
     .dim-faded input{opacity:.3}.m2-faded input{opacity:.3}
-    .remove-btn{width:30px;height:30px;border-radius:6px;border:1px solid var(--border);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#aaa;transition:all .15s}
+    .remove-btn{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#aaa;transition:all .15s}
     .remove-btn:hover{background:#fbe3e1;color:var(--danger);border-color:#f0c4c0}
-    /* Lookup */
     .lookup-search-wrap{position:relative}
-    .lookup-dropdown{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;max-height:300px;overflow-y:auto;z-index:10;box-shadow:0 8px 24px rgba(0,0,0,.1);display:none}
+    .lookup-dropdown{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;max-height:260px;overflow-y:auto;z-index:10;box-shadow:0 8px 24px rgba(0,0,0,.1);display:none}
     .lookup-dropdown.open{display:block}
-    .lookup-option{padding:10px 14px;cursor:pointer;border-bottom:1px solid #f5f2ee;font-size:13px}
+    .lookup-option{padding:9px 14px;cursor:pointer;border-bottom:1px solid #f5f2ee;font-size:13px}
     .lookup-option:hover,.lookup-option.highlighted{background:var(--accent-light)}
     .lookup-option .opt-sku{font-family:monospace;font-size:11px;color:var(--accent);margin-right:8px}
     .lookup-option .opt-size{color:var(--text-secondary);font-size:12px}
-    .spec-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
-    .spec-item{padding:12px;background:#faf8f5;border-radius:8px;border:1px solid #f0ece6}
-    .spec-item .spec-val{font-size:20px;font-weight:700;color:var(--text-primary)}
-    .spec-item .spec-lbl{font-size:10px;color:var(--stone-dark);text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px}
-    /* Mode toggle */
+    .spec-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+    .spec-item{padding:10px;background:#faf8f5;border-radius:8px;border:1px solid #f0ece6}
+    .spec-item .spec-val{font-size:18px;font-weight:700;color:var(--text-primary)}
+    .spec-item .spec-lbl{font-size:9px;color:var(--stone-dark);text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px}
     .mode-toggle{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden}
     .mode-btn{flex:1;padding:10px 16px;text-align:center;font-size:13px;font-weight:600;cursor:pointer;background:#faf8f5;color:var(--text-secondary);border:none;font-family:inherit;transition:all .15s}
     .mode-btn.active{background:var(--accent);color:#fff}
     .mode-btn:not(:last-child){border-right:1px solid var(--border)}
+    /* Product section */
+    .prod-section{border:2px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px;background:#fff;position:relative}
+    .prod-section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+    .prod-section-title{font-size:15px;font-weight:700;color:var(--accent)}
+    .prod-remove{background:none;border:none;color:#ccc;cursor:pointer;font-size:20px;padding:4px 8px;border-radius:6px;transition:all .15s}
+    .prod-remove:hover{color:var(--danger);background:#fdf0ef}
+    .prod-results{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:14px}
+    /* Summary */
+    .summary-box{background:var(--bg-sidebar);border-radius:12px;padding:20px;margin-top:20px}
+    .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+    .summary-item{text-align:center}
+    .summary-val{font-size:28px;font-weight:700;color:#fff}
+    .summary-lbl{font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
     .mobile-header{display:none}.overlay{display:none}
     @media(max-width:768px){
       .sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}.main{margin-left:0}.page{padding:16px}
@@ -91,70 +97,41 @@
       .sidebar,.mobile-header,.overlay,.btn-print,.no-print{display:none!important}
       .main{margin-left:0}.page{display:none!important;padding:0;max-width:100%}
       .page.print-target{display:block!important}
-      .card{box-shadow:none;border:1px solid #ddd;break-inside:avoid}
+      .card,.prod-section{box-shadow:none;break-inside:avoid}
       .result-box{break-inside:avoid}
       .print-header{display:flex!important;align-items:center;gap:16px;padding-bottom:16px;margin-bottom:20px;border-bottom:2px solid var(--accent)}
-      .print-header img{height:45px}.print-header .print-title{font-size:18px;font-weight:700}
+      .print-header .print-title{font-size:18px;font-weight:700}
       .print-header .print-date{font-size:11px;color:#999;margin-left:auto}
     }
     @media not print{.print-header{display:none!important}}
   </style>
 </head>
 <body>
-  <div class="mobile-header">
-    <button class="hamburger" onclick="toggleSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg></button>
-    <span>Stone & Outdoor — Resources</span>
-  </div>
+  <div class="mobile-header"><button class="hamburger" onclick="toggleSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg></button><span>Stone & Outdoor — Resources</span></div>
   <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
-
   <aside class="sidebar" id="sidebar">
-    <div class="sidebar-logo">
-      <a href="https://www.stoneoutdoor.com.au" target="_blank" rel="noopener"><img src="logo.png" alt="Stone & Outdoor" style="filter:brightness(0) invert(1);opacity:.9;"/></a>
-      <div style="color:#888;font-size:10px;margin-top:8px;letter-spacing:1px;text-transform:uppercase">Nuway Internal Resources</div>
-    </div>
+    <div class="sidebar-logo"><a href="https://www.stoneoutdoor.com.au" target="_blank" rel="noopener"><img src="logo.png" alt="Stone & Outdoor" style="filter:brightness(0) invert(1);opacity:.9;"/></a><div style="color:#888;font-size:10px;margin-top:8px;letter-spacing:1px;text-transform:uppercase">Nuway Internal Resources</div></div>
     <nav class="sidebar-nav">
-      <button class="nav-item active" onclick="showPage('stock')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-        Stock Checker
-      </button>
-      <a class="nav-item" href="https://www.google.com/maps/d/viewer?mid=1kHa9XVylzNZxV5f7ioo60CvtU1HscAY2" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        Delivery Zone Map<span class="ext-badge">↗</span>
-      </a>
-      <button class="nav-item" onclick="showPage('calculator')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="10" y2="10"/><line x1="14" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="10" y2="14"/><line x1="14" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="10" y2="18"/><line x1="14" y1="18" x2="16" y2="18"/></svg>
-        Qty Calculator
-      </button>
+      <button class="nav-item active" onclick="showPage('stock')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>Stock Checker</button>
+      <a class="nav-item" href="https://www.google.com/maps/d/viewer?mid=1kHa9XVylzNZxV5f7ioo60CvtU1HscAY2" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>Delivery Zone Map<span class="ext-badge">↗</span></a>
+      <button class="nav-item" onclick="showPage('calculator')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="10" y2="10"/><line x1="14" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="10" y2="14"/><line x1="14" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="10" y2="18"/><line x1="14" y1="18" x2="16" y2="18"/></svg>Qty Calculator</button>
     </nav>
-    <div class="sidebar-footer">
-      <a href="https://www.stoneoutdoor.com.au" target="_blank" rel="noopener">stoneoutdoor.com.au ↗</a>
-      <div style="margin-top:4px;font-size:10px;color:#666">07 3808 4503</div>
-      <div style="margin-top:4px;font-size:9px;color:#555">v1.4.0</div>
-    </div>
+    <div class="sidebar-footer"><a href="https://www.stoneoutdoor.com.au" target="_blank" rel="noopener">stoneoutdoor.com.au ↗</a><div style="margin-top:4px;font-size:10px;color:#666">07 3808 4503</div><div style="margin-top:4px;font-size:9px;color:#555">v1.5.0</div></div>
   </aside>
-
   <div class="main">
-
-    <!-- ===== STOCK CHECKER ===== -->
+    <!-- STOCK CHECKER -->
     <div class="page active" id="page-stock">
       <div class="page-header"><div><h1 class="page-title">Stock Checker</h1><p class="page-sub">Search Stone &amp; Outdoor inventory by name, description, or SKU.</p></div></div>
-      <div class="card" style="padding:16px;margin-bottom:20px">
-        <input id="search" type="text" class="form-input" placeholder="Search by name/description or SKU…" style="font-size:15px">
-        <div id="status" style="font-size:13px;color:var(--text-secondary);margin-top:8px">Loading latest data…</div>
-      </div>
-      <div class="card" style="overflow-x:auto">
-        <table class="data-table"><thead><tr><th>SKU</th><th>Name / Description</th><th class="text-right">Stock</th><th class="text-right">RRP</th></tr></thead><tbody id="results"></tbody></table>
-      </div>
+      <div class="card" style="padding:16px;margin-bottom:20px"><input id="search" type="text" class="form-input" placeholder="Search by name/description or SKU…" style="font-size:15px"><div id="status" style="font-size:13px;color:var(--text-secondary);margin-top:8px">Loading…</div></div>
+      <div class="card" style="overflow-x:auto"><table class="data-table"><thead><tr><th>SKU</th><th>Name / Description</th><th class="text-right">Stock</th><th class="text-right">RRP</th></tr></thead><tbody id="results"></tbody></table></div>
     </div>
-
-    <!-- ===== QTY CALCULATOR (merged) ===== -->
+    <!-- QTY CALCULATOR -->
     <div class="page" id="page-calculator">
-      <div class="print-header"><img src="logo.png" alt="Stone & Outdoor"/><div><div class="print-title">Quantity Calculator</div><div style="font-size:12px;color:#999">Stone &amp; Outdoor — Internal Resource</div></div><div class="print-date" id="printDate"></div></div>
+      <div class="print-header"><div><div class="print-title">Quantity Calculator</div><div style="font-size:12px;color:#999">Internal Resource</div></div><div class="print-date" id="printDate"></div></div>
       <div class="page-header">
-        <div><h1 class="page-title">Quantity Calculator</h1><p class="page-sub">Calculate by tile dimensions or look up a specific product.</p></div>
+        <div><h1 class="page-title">Quantity Calculator</h1><p class="page-sub">Calculate by tile dimensions or look up specific products. Add multiple products for a complete job estimate.</p></div>
         <button class="btn btn-print no-print" onclick="printCalc()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Print</button>
       </div>
-
       <!-- Mode toggle -->
       <div class="card" style="padding:16px;margin-bottom:20px">
         <label class="form-label">Calculate By</label>
@@ -163,352 +140,281 @@
           <button class="mode-btn active" onclick="setCalcMode('product')">Product Lookup</button>
         </div>
       </div>
-
-      <!-- === DIMENSIONS MODE === -->
+      <!-- DIMENSIONS MODE -->
       <div id="dimMode" style="display:none">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
-          <div class="card" style="padding:16px">
-            <label class="form-label">Measurement Type</label>
-            <select id="calcType" class="form-select" onchange="onCalcTypeChange()">
-              <option value="area">Area (m²) → Pieces</option>
-              <option value="lineal">Lineal Metres → Pieces (Copings)</option>
-            </select>
-          </div>
-          <div class="card" style="padding:16px">
-            <label class="form-label">Tile / Paver Size</label>
-            <select id="tileSize" class="form-select" onchange="onTileSizeChange()">
-              <optgroup label="Standard Sizes">
-                <option value="100x100">100 × 100 mm</option><option value="200x50">200 × 50 mm</option><option value="200x100">200 × 100 mm</option>
-                <option value="400x400" selected>400 × 400 mm</option><option value="406x406">406 × 406 mm (16"×16")</option>
-                <option value="600x400">600 × 400 mm</option><option value="610x406">610 × 406 mm (24"×16")</option><option value="600x600">600 × 600 mm</option>
-              </optgroup>
-              <optgroup label="French Patterns">
-                <option value="french_metric">French Pattern — Metric (1.389 sets/m²)</option><option value="french_imperial">French Pattern — Imperial (1.35 sets/m²)</option>
-              </optgroup>
-              <optgroup label="Custom"><option value="custom">Custom Size…</option></optgroup>
-            </select>
-            <div id="customSizeRow" style="display:none;margin-top:10px;gap:10px">
-              <div style="flex:1"><label class="form-label" style="font-size:10px">Length (mm)</label><input type="number" id="customL" class="form-input" placeholder="e.g. 600" min="1"></div>
-              <div style="flex:1"><label class="form-label" style="font-size:10px">Width (mm)</label><input type="number" id="customW" class="form-input" placeholder="e.g. 300" min="1"></div>
-            </div>
-          </div>
+          <div class="card" style="padding:16px"><label class="form-label">Measurement Type</label><select id="calcType" class="form-select" onchange="onCalcTypeChange()"><option value="area">Area (m²) → Pieces</option><option value="lineal">Lineal Metres → Pieces (Copings)</option></select></div>
+          <div class="card" style="padding:16px"><label class="form-label">Tile / Paver Size</label><select id="tileSize" class="form-select" onchange="onTileSizeChange()"><optgroup label="Standard Sizes"><option value="100x100">100×100 mm</option><option value="200x50">200×50 mm</option><option value="200x100">200×100 mm</option><option value="400x400" selected>400×400 mm</option><option value="406x406">406×406 mm (16"×16")</option><option value="600x400">600×400 mm</option><option value="610x406">610×406 mm (24"×16")</option><option value="600x600">600×600 mm</option></optgroup><optgroup label="French Patterns"><option value="french_metric">French Metric (1.389 sets/m²)</option><option value="french_imperial">French Imperial (1.35 sets/m²)</option></optgroup><optgroup label="Custom"><option value="custom">Custom Size…</option></optgroup></select><div id="customSizeRow" style="display:none;margin-top:10px;gap:10px"><div style="flex:1"><label class="form-label" style="font-size:10px">Length (mm)</label><input type="number" id="customL" class="form-input" placeholder="e.g. 600" min="1"></div><div style="flex:1"><label class="form-label" style="font-size:10px">Width (mm)</label><input type="number" id="customW" class="form-input" placeholder="e.g. 300" min="1"></div></div></div>
         </div>
+        <div class="card" style="padding:16px;margin-bottom:20px"><div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap"><label class="form-label" style="margin-bottom:0">Wastage %</label><input type="range" id="dimWastage" min="0" max="25" value="10" style="flex:1;min-width:120px;accent-color:var(--accent)" oninput="document.getElementById('dimWastageVal').textContent=this.value+'%';calcDimensions()"><span id="dimWastageVal" style="font-weight:700;color:var(--accent);min-width:36px">10%</span></div></div>
+        <div id="dimAreaSection"><div class="card" style="padding:16px;margin-bottom:20px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><label class="form-label" style="margin-bottom:0">Areas</label><div style="display:flex;gap:6px" class="no-print"><button class="btn btn-primary btn-sm" onclick="addDimArea('add')">+ Add Area</button><button class="btn btn-danger btn-sm" onclick="addDimArea('sub')">− Cutout</button></div></div><div id="dimAreaRows"></div></div></div>
+        <div id="dimLinealSection" style="display:none"><div class="card" style="padding:16px;margin-bottom:20px"><label class="form-label">Total Lineal Metres</label><input type="number" id="dimLinealInput" class="form-input" placeholder="e.g. 24.5" min="0" step="0.01" oninput="calcDimensions()" style="max-width:300px"><div style="font-size:11px;color:var(--text-secondary);margin-top:4px">Coping pieces assumed laid lengthways.</div></div></div>
+        <div id="dimResults" style="display:none"><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px"><div class="result-box"><div class="result-label">Net Coverage</div><div class="result-number" id="dimResNet">—</div></div><div class="result-box"><div class="result-label">Incl. Wastage</div><div class="result-number" id="dimResGross">—</div></div><div class="result-box"><div class="result-label" id="dimResPcsLbl">Pieces Required</div><div class="result-number" id="dimResPcs">—</div></div></div></div>
       </div>
-
-      <!-- === PRODUCT MODE === -->
+      <!-- PRODUCT MODE -->
       <div id="prodMode">
-        <div class="card" style="padding:16px;margin-bottom:20px">
-          <label class="form-label">Search Product</label>
-          <div class="lookup-search-wrap">
-            <input id="lookupSearch" type="text" class="form-input" placeholder="Start typing product name or SKU…" style="font-size:15px" autocomplete="off">
-            <div class="lookup-dropdown" id="lookupDropdown"></div>
+        <div id="productSections"></div>
+        <div style="margin-bottom:20px" class="no-print"><button class="btn btn-primary" onclick="addProductSection()">+ Add Product</button></div>
+        <!-- Combined summary -->
+        <div id="combinedSummary" style="display:none" class="summary-box">
+          <div style="font-size:13px;font-weight:600;color:#ccc;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Job Summary — All Products</div>
+          <div class="summary-grid">
+            <div class="summary-item"><div class="summary-lbl">Total Pieces</div><div class="summary-val" id="sumPieces">0</div></div>
+            <div class="summary-item"><div class="summary-lbl">Total Pallets</div><div class="summary-val" id="sumPallets">0</div></div>
+            <div class="summary-item"><div class="summary-lbl">Total Weight</div><div class="summary-val" id="sumWeight">—</div></div>
           </div>
-          <div id="lookupStatus" style="font-size:12px;color:var(--text-secondary);margin-top:6px">Loading product database…</div>
-        </div>
-
-        <!-- Product info card -->
-        <div id="productInfo" style="display:none">
-          <div class="card" style="padding:16px;margin-bottom:16px">
-            <div style="display:flex;justify-content:space-between;align-items:start;flex-wrap:wrap;gap:12px">
-              <div>
-                <div style="font-size:17px;font-weight:700" id="lkName"></div>
-                <div style="font-size:13px;color:var(--text-secondary);margin-top:2px" id="lkSubline"></div>
-              </div>
-              <div style="text-align:right">
-                <div style="font-family:monospace;font-size:14px;color:var(--accent);font-weight:600" id="lkSku"></div>
-                <div style="font-size:13px;margin-top:2px" id="lkStockBadge"></div>
-              </div>
-            </div>
-          </div>
-          <div class="spec-grid" style="margin-bottom:16px">
-            <div class="spec-item"><div class="spec-lbl">Size</div><div class="spec-val" id="lkSize">—</div></div>
-            <div class="spec-item"><div class="spec-lbl">Finish</div><div class="spec-val" id="lkFinish">—</div></div>
-            <div class="spec-item"><div class="spec-lbl">No. per Pallet</div><div class="spec-val" id="lkPerPallet">—</div></div>
-            <div class="spec-item"><div class="spec-lbl">No. per m²</div><div class="spec-val" id="lkPerM2">—</div></div>
-            <div class="spec-item"><div class="spec-lbl">No. per l/m</div><div class="spec-val" id="lkPerLm">—</div></div>
-            <div class="spec-item"><div class="spec-lbl">Weight per Piece</div><div class="spec-val" id="lkWeightPiece">—</div></div>
-          </div>
-
-          <!-- Measurement type for product mode -->
-          <div class="card" style="padding:16px;margin-bottom:20px">
-            <label class="form-label">Measurement Type</label>
-            <select id="prodMeasure" class="form-select" onchange="calcProduct()" style="max-width:300px">
-              <option value="m2">Area (m²)</option>
-              <option value="lm">Lineal Metres (Copings)</option>
-              <option value="pieces">Direct Pieces</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <!-- === SHARED: Wastage === -->
-      <div class="card" style="padding:16px;margin-bottom:20px" id="wastageCard">
-        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-          <label class="form-label" style="margin-bottom:0">Wastage %</label>
-          <input type="range" id="wastageSlider" min="0" max="25" value="10" style="flex:1;min-width:120px;accent-color:var(--accent)" oninput="document.getElementById('wastageVal').textContent=this.value+'%';onWastageChange()">
-          <span id="wastageVal" style="font-weight:700;color:var(--accent);min-width:36px">10%</span>
-        </div>
-      </div>
-
-      <!-- === SHARED: Area input === -->
-      <div id="areaSection">
-        <div class="card" style="padding:16px;margin-bottom:20px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-            <label class="form-label" style="margin-bottom:0">Areas</label>
-            <div style="display:flex;gap:6px" class="no-print">
-              <button class="btn btn-primary btn-sm" onclick="addArea('add')">+ Add Area</button>
-              <button class="btn btn-danger btn-sm" onclick="addArea('sub')">− Cutout</button>
-            </div>
-          </div>
-          <div id="areaRows"></div>
-        </div>
-      </div>
-
-      <!-- === SHARED: Lineal input === -->
-      <div id="linealSection" style="display:none">
-        <div class="card" style="padding:16px;margin-bottom:20px">
-          <label class="form-label">Total Lineal Metres</label>
-          <input type="number" id="linealInput" class="form-input" placeholder="e.g. 24.5" min="0" step="0.01" oninput="onMeasureInput()" style="max-width:300px">
-          <div style="font-size:11px;color:var(--text-secondary);margin-top:4px">Coping pieces assumed laid lengthways (longest dimension along the edge).</div>
-        </div>
-      </div>
-
-      <!-- === SHARED: Pieces input (product mode only) === -->
-      <div id="piecesSection" style="display:none">
-        <div class="card" style="padding:16px;margin-bottom:20px">
-          <label class="form-label">Quantity (Pieces)</label>
-          <input type="number" id="piecesInput" class="form-input" placeholder="e.g. 100" min="0" step="1" oninput="calcProduct()" style="max-width:300px">
-        </div>
-      </div>
-
-      <!-- === RESULTS === -->
-      <div id="calcResults" style="display:none">
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px">
-          <div class="result-box"><div class="result-label">Net Coverage</div><div class="result-number" id="resNetVal">—</div></div>
-          <div class="result-box"><div class="result-label">Incl. Wastage</div><div class="result-number" id="resGrossVal">—</div></div>
-          <div class="result-box"><div class="result-label" id="resPiecesLabel">Pieces Required</div><div class="result-number" id="resPiecesVal">—</div></div>
-          <div class="result-box" id="resPalletsBox" style="display:none"><div class="result-label">Pallets</div><div class="result-number" id="resPallets">—</div></div>
-          <div class="result-box" id="resWeightBox" style="display:none"><div class="result-label">Total Weight</div><div class="result-number" id="resWeight">—</div></div>
-          <div class="result-box" id="resStockBox" style="display:none"><div class="result-label">Stock on Hand</div><div class="result-number" id="resStock">—</div></div>
         </div>
       </div>
     </div>
   </div>
+<script>
+/* === NAV === */
+function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+id).classList.add('active');document.querySelectorAll('.nav-item').forEach(n=>{n.classList.remove('active');if(n.getAttribute('onclick')===`showPage('${id}')`)n.classList.add('active')});if(window.innerWidth<=768)toggleSidebar(false)}
+function toggleSidebar(f){const s=document.getElementById('sidebar'),o=document.getElementById('overlay'),v=f!==undefined?f:!s.classList.contains('open');s.classList.toggle('open',v);o.classList.toggle('open',v)}
+function printCalc(){document.getElementById('printDate').textContent=new Date().toLocaleDateString('en-AU',{day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});document.querySelectorAll('.page').forEach(p=>p.classList.remove('print-target'));document.getElementById('page-calculator').classList.add('print-target');window.print();setTimeout(()=>document.getElementById('page-calculator').classList.remove('print-target'),500)}
 
-  <script>
-    /* === NAV === */
-    function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+id).classList.add('active');document.querySelectorAll('.nav-item').forEach(n=>{n.classList.remove('active');if(n.getAttribute('onclick')===`showPage('${id}')`)n.classList.add('active')});if(window.innerWidth<=768)toggleSidebar(false)}
-    function toggleSidebar(f){const s=document.getElementById('sidebar'),o=document.getElementById('overlay'),v=f!==undefined?f:!s.classList.contains('open');s.classList.toggle('open',v);o.classList.toggle('open',v)}
+/* === DATA === */
+const DROPBOX_STOCK="https://www.dropbox.com/scl/fi/jg9pssmaw0gdogvjps1ii/lookup_summary.csv?rlkey=wu659zpoqfjty6f3ab9ryv2h3&dl=0";
+const DROPBOX_SPECS="https://www.dropbox.com/scl/fi/g262luqwdvs3gahlim0cr/product-spec-database.csv?rlkey=60gb8h8x5teqngnira619dxw3&dl=0";
+function makeDBUrls(s){const u=new URL(s);u.searchParams.delete("st");u.searchParams.set("dl","1");const v1=u.toString();const u2=new URL(v1);u2.hostname="dl.dropboxusercontent.com";const v2=u2.toString();const u3=new URL(v2);u3.searchParams.delete("dl");return[v2,u3.toString(),v1]}
+async function fetchCsv(urls){for(const url of urls){try{const r=await fetch(url,{cache:"no-store"});if(!r.ok)throw 0;const t=await r.text();if(/<!doctype html>|<html/i.test(t.slice(0,300)))throw 0;return t}catch(e){console.warn('CSV fail:',url,e)}}return null}
 
-    /* === PRINT === */
-    function printCalc(){document.getElementById('printDate').textContent=new Date().toLocaleDateString('en-AU',{day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});document.querySelectorAll('.page').forEach(p=>p.classList.remove('print-target'));document.getElementById('page-calculator').classList.add('print-target');window.print();setTimeout(()=>document.getElementById('page-calculator').classList.remove('print-target'),500)}
+/* === STOCK === */
+const COLS={code:"barcode",name:"description",stock:"available_qty",price:"sell_inc"};
+let stockRows=[];
+const norm=v=>(v==null?'':String(v)).toLowerCase().trim();
+const toNum=v=>{const n=parseFloat(String(v).replace(/[,\s]/g,''));return Number.isFinite(n)?n:NaN};
+const money=n=>{const x=toNum(n);return Number.isFinite(x)?new Intl.NumberFormat('en-AU',{style:'currency',currency:'AUD'}).format(x):''};
+function buildStockIdx(d){for(const r of d){r.__code=norm(r[COLS.code]);r.__name=norm(r[COLS.name]);r.__blob=norm(`${r[COLS.code]??''} ${r[COLS.name]??''}`);r.__stock=toNum(r[COLS.stock]);r.__price=toNum(r[COLS.price])}}
+function stockQuery(q){const t=norm(q).split(/\s+/).filter(Boolean);if(!t.length)return stockRows.filter(r=>r.__stock>0);return stockRows.filter(r=>t.every(x=>r.__blob.includes(x)||r.__code.includes(x)))}
+function renderStock(list){const el=document.getElementById('results');el.innerHTML='';for(const r of list){const tr=document.createElement('tr');const sv=Number.isFinite(r.__stock)?r.__stock:0;tr.innerHTML=`<td style="font-family:monospace;font-size:12px">${r[COLS.code]||''}</td><td>${r[COLS.name]||''}</td><td class="text-right" style="${sv>0?'color:#2e7d32;font-weight:600':'color:#c0392b'}">${Number.isFinite(r.__stock)?r.__stock.toLocaleString():''}</td><td class="text-right">${money(r.__price)}</td>`;el.appendChild(tr)}document.getElementById('status').textContent=`${list.length.toLocaleString()} match(es)`}
+async function loadStock(){document.getElementById('status').textContent='Loading…';const t=await fetchCsv(makeDBUrls(DROPBOX_STOCK));if(!t){document.getElementById('status').textContent='⚠️ Could not load';return}const p=Papa.parse(t,{header:true,skipEmptyLines:"greedy"});stockRows=(p.data||[]).filter(r=>r&&(r[COLS.code]||r[COLS.name]));buildStockIdx(stockRows);renderStock(stockQuery(''));document.getElementById('status').textContent=`Loaded ${stockRows.length.toLocaleString()} products`}
+let deb;document.getElementById('search').addEventListener('input',()=>{clearTimeout(deb);deb=setTimeout(()=>renderStock(stockQuery(document.getElementById('search').value)),120)});
+function getStock(sku){if(!sku||!stockRows.length)return null;const s=norm(sku);const m=stockRows.find(r=>r.__code===s);return m?{qty:m.__stock,price:m.__price}:null}
 
-    /* === DATA LOADING === */
-    const DROPBOX_STOCK="https://www.dropbox.com/scl/fi/jg9pssmaw0gdogvjps1ii/lookup_summary.csv?rlkey=wu659zpoqfjty6f3ab9ryv2h3&dl=0";
-    const DROPBOX_SPECS="https://www.dropbox.com/scl/fi/g262luqwdvs3gahlim0cr/product-spec-database.csv?rlkey=60gb8h8x5teqngnira619dxw3&dl=0";
-    function makeDBUrls(s){const u=new URL(s);u.searchParams.delete("st");u.searchParams.set("dl","1");const v1=u.toString();const u2=new URL(v1);u2.hostname="dl.dropboxusercontent.com";const v2=u2.toString();const u3=new URL(v2);u3.searchParams.delete("dl");return[v2,u3.toString(),v1]}
-    async function fetchCsvText(urls){for(const url of urls){try{const r=await fetch(url,{cache:"no-store"});if(!r.ok)throw 0;const t=await r.text();if(/<!doctype html>|<html/i.test(t.slice(0,300)))throw 0;return t}catch(e){console.warn('CSV fail:',url,e)}}return null}
+/* === SPECS === */
+let specRows=[];
+async function loadSpecs(){const t=await fetchCsv(makeDBUrls(DROPBOX_SPECS));if(!t)return;const p=Papa.parse(t,{header:true,skipEmptyLines:"greedy"});specRows=(p.data||[]).filter(r=>r&&r.sku);for(const r of specRows){r.__search=norm(`${r.sku} ${r.product_name} ${r.size} ${r.finish}`);r.__weightPiece=parseFloat(r.weight_per_piece_kg||r.weight_per_pallet_kg)||0;r.__wastage=parseFloat(r.wastage||r.waste)||0}
+  document.querySelectorAll('.lookup-status').forEach(el=>el.textContent=`${specRows.length} products loaded`);
+}
+function searchSpecs(q){const t=norm(q).split(/\s+/).filter(Boolean);if(!t.length)return[];return specRows.filter(r=>t.every(x=>r.__search.includes(x))).slice(0,20)}
 
-    /* === STOCK === */
-    const COLS={code:"barcode",name:"description",stock:"available_qty",price:"sell_inc"};
-    let stockRows=[];
-    const norm=v=>(v==null?'':String(v)).toLowerCase().trim();
-    const toNum=v=>{const n=parseFloat(String(v).replace(/[,\s]/g,''));return Number.isFinite(n)?n:NaN};
-    const money=n=>{const x=toNum(n);return Number.isFinite(x)?new Intl.NumberFormat('en-AU',{style:'currency',currency:'AUD'}).format(x):''};
-    function buildStockIdx(d){for(const r of d){r.__code=norm(r[COLS.code]);r.__name=norm(r[COLS.name]);r.__blob=norm(`${r[COLS.code]??''} ${r[COLS.name]??''}`);r.__stock=toNum(r[COLS.stock]);r.__price=toNum(r[COLS.price])}}
-    function stockQuery(q){const t=norm(q).split(/\s+/).filter(Boolean);if(!t.length)return stockRows.filter(r=>r.__stock>0);return stockRows.filter(r=>t.every(x=>r.__blob.includes(x)||r.__code.includes(x)))}
-    function renderStock(list){const el=document.getElementById('results');el.innerHTML='';for(const r of list){const tr=document.createElement('tr');const sv=Number.isFinite(r.__stock)?r.__stock:0;tr.innerHTML=`<td style="font-family:monospace;font-size:12px">${r[COLS.code]||''}</td><td>${r[COLS.name]||''}</td><td class="text-right" style="${sv>0?'color:#2e7d32;font-weight:600':'color:#c0392b'}">${Number.isFinite(r.__stock)?r.__stock.toLocaleString():''}</td><td class="text-right">${money(r.__price)}</td>`;el.appendChild(tr)}document.getElementById('status').textContent=`${list.length.toLocaleString()} match(es)`}
-    async function loadStock(){document.getElementById('status').textContent='Loading…';const t=await fetchCsvText(makeDBUrls(DROPBOX_STOCK));if(!t){document.getElementById('status').textContent='⚠️ Could not load';return}const p=Papa.parse(t,{header:true,skipEmptyLines:"greedy"});stockRows=(p.data||[]).filter(r=>r&&(r[COLS.code]||r[COLS.name]));buildStockIdx(stockRows);renderStock(stockQuery(''));document.getElementById('status').textContent=`Loaded ${stockRows.length.toLocaleString()} products`}
-    let deb;document.getElementById('search').addEventListener('input',()=>{clearTimeout(deb);deb=setTimeout(()=>renderStock(stockQuery(document.getElementById('search').value)),120)});
-    function getStockForSku(sku){if(!sku||!stockRows.length)return null;const s=norm(sku);const m=stockRows.find(r=>r.__code===s);return m?{qty:m.__stock,price:m.__price}:null}
+/* === CALC MODE === */
+let calcMode='product';
+function setCalcMode(mode){calcMode=mode;document.querySelectorAll('.mode-btn').forEach((b,i)=>b.classList.toggle('active',i===(mode==='dimensions'?0:1)));document.getElementById('dimMode').style.display=mode==='dimensions'?'':'none';document.getElementById('prodMode').style.display=mode==='product'?'':'none'}
 
-    /* === PRODUCT SPECS === */
-    let specRows=[];let selectedProduct=null;let highlightIdx=-1;
-    async function loadSpecs(){document.getElementById('lookupStatus').textContent='Loading product database…';const t=await fetchCsvText(makeDBUrls(DROPBOX_SPECS));if(!t){document.getElementById('lookupStatus').textContent='⚠️ Could not load specs';return}const p=Papa.parse(t,{header:true,skipEmptyLines:"greedy"});specRows=(p.data||[]).filter(r=>r&&r.sku);for(const r of specRows)r.__search=norm(`${r.sku} ${r.product_name} ${r.size} ${r.finish}`);document.getElementById('lookupStatus').textContent=`${specRows.length} products — start typing to search`}
-    function searchSpecs(q){const t=norm(q).split(/\s+/).filter(Boolean);if(!t.length)return[];return specRows.filter(r=>t.every(x=>r.__search.includes(x))).slice(0,20)}
+/* === DIMENSIONS MODE === */
+const TILE_SIZES={'100x100':[100,100],'200x50':[200,50],'200x100':[200,100],'400x400':[400,400],'406x406':[406,406],'600x400':[600,400],'610x406':[610,406],'600x600':[600,600]};
+const FRENCH_RATES={'french_metric':1.389,'french_imperial':1.35};
+function getTileDims(){const v=document.getElementById('tileSize').value;if(v==='custom'){const l=parseFloat(document.getElementById('customL').value),w=parseFloat(document.getElementById('customW').value);if(l>0&&w>0)return{type:'standard',dims:[l,w]};return null}if(FRENCH_RATES[v])return{type:'french',rate:FRENCH_RATES[v]};return TILE_SIZES[v]?{type:'standard',dims:TILE_SIZES[v]}:null}
+let dimAreas=[],dimAreaCtr=0;
+function addDimArea(type){dimAreaCtr++;dimAreas.push({id:dimAreaCtr,type,label:'',length:'',width:'',directM2:''});renderDimAreas()}
+function removeDimArea(id){dimAreas=dimAreas.filter(a=>a.id!==id);renderDimAreas();calcDimensions()}
+function renderDimAreas(){renderAreaRows(dimAreas,'dimAreaRows',handleDimAreaInput)}
+function handleDimAreaInput(e){handleGenericAreaInput(e,dimAreas);calcDimensions()}
+function getDimTotal(){return calcAreaTotal(dimAreas)}
+function onCalcTypeChange(){const m=document.getElementById('calcType').value;document.getElementById('dimAreaSection').style.display=m==='area'?'':'none';document.getElementById('dimLinealSection').style.display=m==='lineal'?'':'none';const cs=['400x400','406x406','600x400','610x406','custom'];document.querySelectorAll('#tileSize option').forEach(o=>{if(m==='lineal'){const ok=cs.includes(o.value);o.style.display=ok?'':'none';if(o.selected&&!ok)document.getElementById('tileSize').value='400x400'}else o.style.display=''});document.querySelectorAll('#tileSize optgroup').forEach(og=>{og.style.display=[...og.querySelectorAll('option')].some(o=>o.style.display!=='none')?'':'none'});onTileSizeChange()}
+function onTileSizeChange(){document.getElementById('customSizeRow').style.display=document.getElementById('tileSize').value==='custom'?'flex':'none';calcDimensions()}
+function calcDimensions(){const rd=document.getElementById('dimResults');const ct=document.getElementById('calcType').value;const tile=getTileDims();const w=parseInt(document.getElementById('dimWastage').value)/100;if(!tile){rd.style.display='none';return}let nv=0,u='',nq=0,ul='';if(ct==='area'){u='m²';nv=getDimTotal();if(nv===0){rd.style.display='none';return}const gv=nv*(1+w);document.getElementById('dimResNet').textContent=nv.toFixed(2)+' '+u;document.getElementById('dimResGross').textContent=gv.toFixed(2)+' '+u;if(tile.type==='french'){nq=Math.ceil(gv*tile.rate);ul='Sets Required'}else{nq=Math.ceil(gv/((tile.dims[0]/1000)*(tile.dims[1]/1000)));ul='Pieces Required'}}else{u='lm';nv=parseFloat(document.getElementById('dimLinealInput').value)||0;if(nv===0){rd.style.display='none';return}const gv=nv*(1+w);document.getElementById('dimResNet').textContent=nv.toFixed(2)+' '+u;document.getElementById('dimResGross').textContent=gv.toFixed(2)+' '+u;nq=Math.ceil(gv/(Math.max(tile.dims[0],tile.dims[1])/1000));ul='Pieces Required'}document.getElementById('dimResPcsLbl').textContent=ul;document.getElementById('dimResPcs').textContent=nq.toLocaleString();rd.style.display=''}
+document.getElementById('customL').addEventListener('input',calcDimensions);document.getElementById('customW').addEventListener('input',calcDimensions);
+addDimArea('add');
 
-    const lookupSearchEl=document.getElementById('lookupSearch');
-    const lookupDropdownEl=document.getElementById('lookupDropdown');
+/* === SHARED AREA HELPERS === */
+function renderAreaRows(areas,containerId,inputHandler){
+  const c=document.getElementById(containerId);c.innerHTML='';
+  if(!areas.length){c.innerHTML='<div style="color:var(--text-secondary);font-size:13px;padding:10px 0">Click "+ Add Area" to add measurements.</div>';return}
+  for(const a of areas){const div=document.createElement('div');div.className='area-row';div.dataset.areaId=a.id;const hd=!!(a.length||a.width),hr=!!a.directM2;
+    div.innerHTML=`<div><span class="area-badge ${a.type}">${a.type==='add'?'+':'−'}</span></div><div><label class="form-label" style="font-size:10px">Label</label><input type="text" class="form-input" placeholder="e.g. Patio" value="${a.label||''}" data-field="label" data-id="${a.id}"></div><div class="${hr?'dim-faded':''}"><label class="form-label" style="font-size:10px">Length (m)</label><input type="number" class="form-input" placeholder="0.00" min="0" step="0.01" value="${a.length}" data-field="length" data-id="${a.id}"></div><div class="${hr?'dim-faded':''}"><label class="form-label" style="font-size:10px">Width (m)</label><input type="number" class="form-input" placeholder="0.00" min="0" step="0.01" value="${a.width}" data-field="width" data-id="${a.id}"></div><div class="or-divider">or</div><div class="${hd?'m2-faded':''}"><label class="form-label" style="font-size:10px">m²</label><input type="number" class="form-input" placeholder="0.00" min="0" step="0.01" value="${a.directM2||''}" data-field="directM2" data-id="${a.id}"></div><div class="no-print"><button class="remove-btn" data-remove="${a.id}" title="Remove"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>`;
+    div.addEventListener('input',inputHandler);c.appendChild(div)}
+}
+function handleGenericAreaInput(e,areas){
+  const inp=e.target;if(!inp.dataset.field)return;
+  const id=parseInt(inp.dataset.id),f=inp.dataset.field,v=inp.value,a=areas.find(x=>x.id===id);if(!a)return;a[f]=v;const row=inp.closest('.area-row');
+  if(f==='length'||f==='width'){if(a.length||a.width){if(a.directM2){a.directM2='';const m=row.querySelector('[data-field="directM2"]');if(m)m.value=''}}updateFade(row,a)}
+  else if(f==='directM2'){if(v&&(a.length||a.width)){a.length='';a.width='';const l=row.querySelector('[data-field="length"]'),w=row.querySelector('[data-field="width"]');if(l)l.value='';if(w)w.value=''}updateFade(row,a)}
+}
+function updateFade(row,a){const hd=!!(a.length||a.width),hr=!!a.directM2,c=row.children;c[2].className=hr?'dim-faded':'';c[3].className=hr?'dim-faded':'';c[5].className=hd?'m2-faded':''}
+function calcAreaTotal(areas){let t=0;for(const a of areas){let m=0;const d=parseFloat(a.directM2)||0;if(d>0)m=d;else m=(parseFloat(a.length)||0)*(parseFloat(a.width)||0);if(a.type==='add')t+=m;else t-=m}return Math.max(0,t)}
 
-    function renderDropdown(res){lookupDropdownEl.innerHTML='';highlightIdx=-1;if(!res.length){lookupDropdownEl.classList.remove('open');return}res.forEach(r=>{const d=document.createElement('div');d.className='lookup-option';d.innerHTML=`<span class="opt-sku">${r.sku}</span>${r.product_name} <span class="opt-size">${r.size||''}</span>`;d.addEventListener('click',()=>selectProduct(r));lookupDropdownEl.appendChild(d)});lookupDropdownEl.classList.add('open')}
-    lookupSearchEl.addEventListener('input',()=>{const q=lookupSearchEl.value.trim();if(q.length<2){lookupDropdownEl.classList.remove('open');return}renderDropdown(searchSpecs(q))});
-    lookupSearchEl.addEventListener('keydown',e=>{const o=lookupDropdownEl.querySelectorAll('.lookup-option');if(!o.length)return;if(e.key==='ArrowDown'){e.preventDefault();highlightIdx=Math.min(highlightIdx+1,o.length-1);o.forEach((x,i)=>x.classList.toggle('highlighted',i===highlightIdx));o[highlightIdx]?.scrollIntoView({block:'nearest'})}else if(e.key==='ArrowUp'){e.preventDefault();highlightIdx=Math.max(highlightIdx-1,0);o.forEach((x,i)=>x.classList.toggle('highlighted',i===highlightIdx));o[highlightIdx]?.scrollIntoView({block:'nearest'})}else if(e.key==='Enter'&&highlightIdx>=0){e.preventDefault();o[highlightIdx].click()}else if(e.key==='Escape')lookupDropdownEl.classList.remove('open')});
-    document.addEventListener('click',e=>{if(!e.target.closest('.lookup-search-wrap'))lookupDropdownEl.classList.remove('open')});
+/* === PRODUCT SECTIONS === */
+let prodSections=[];
+let prodIdCounter=0;
 
-    function selectProduct(r){
-      selectedProduct=r;
-      lookupDropdownEl.classList.remove('open');
-      lookupSearchEl.value=`${r.sku} — ${r.product_name}`;
-      document.getElementById('lkName').textContent=r.product_name;
-      document.getElementById('lkSubline').textContent=[r.finish,r.thickness].filter(Boolean).join(' · ');
-      document.getElementById('lkSku').textContent=r.sku;
-      document.getElementById('lkSize').textContent=r.size||'—';
-      document.getElementById('lkFinish').textContent=r.finish||'—';
-      document.getElementById('lkPerPallet').textContent=r.no_per_pallet||'—';
-      document.getElementById('lkPerM2').textContent=r.no_per_m2||'—';
-      document.getElementById('lkPerLm').textContent=r.no_per_lm||'—';
-      document.getElementById('lkWeightPiece').textContent=(r.weight_per_piece_kg||r.weight_per_pallet_kg)?((r.weight_per_piece_kg||r.weight_per_pallet_kg)+' kg'):'—';
-      // Stock badge
-      const st=getStockForSku(r.sku);
-      if(st&&Number.isFinite(st.qty)){const c=st.qty>0?'#2e7d32':'#c0392b';document.getElementById('lkStockBadge').innerHTML=`<span style="color:${c};font-weight:600">${st.qty.toLocaleString()} in stock</span>`+(Number.isFinite(st.price)?` · RRP ${money(st.price)}`:'')}
-      else document.getElementById('lkStockBadge').textContent='Stock not available for this SKU';
-      // Set measurement options
-      const sel=document.getElementById('prodMeasure');
-      const hasM2=r.no_per_m2&&parseFloat(r.no_per_m2)>0;
-      const hasLm=r.no_per_lm&&parseFloat(r.no_per_lm)>0;
-      // Enable all options, let user decide
-      sel.value='m2';
-      document.getElementById('productInfo').style.display='';
-      updateInputSections();
-      clearResults();
+function addProductSection(){
+  prodIdCounter++;
+  const sec={id:prodIdCounter,product:null,measure:'m2',areas:[{id:1,type:'add',label:'',length:'',width:'',directM2:''}],areaCtr:1,linealVal:'',piecesVal:'',wastage:10,result:null};
+  prodSections.push(sec);
+  renderAllProducts();
+}
+
+function removeProductSection(id){
+  prodSections=prodSections.filter(s=>s.id!==id);
+  renderAllProducts();
+  updateSummary();
+}
+
+function renderAllProducts(){
+  const container=document.getElementById('productSections');
+  container.innerHTML='';
+  prodSections.forEach((sec,idx)=>{
+    const div=document.createElement('div');
+    div.className='prod-section';
+    div.id='prod-'+sec.id;
+    const prodNum=idx+1;
+    const hasProduct=!!sec.product;
+
+    let specHtml='';
+    if(hasProduct){
+      const r=sec.product;
+      const st=getStock(r.sku);
+      const stockHtml=st&&Number.isFinite(st.qty)?`<span style="color:${st.qty>0?'#2e7d32':'#c0392b'};font-weight:600">${st.qty.toLocaleString()} in stock</span>`+(Number.isFinite(st.price)?` · RRP ${money(st.price)}`:''):'Stock N/A';
+      const wastNote=sec.product.__csvWastage?`Suggested wastage for this product: ${sec.product.__csvWastage}%`:'Default wastage: 10%. Adjust as needed.';
+      specHtml=`
+        <div class="card" style="padding:14px;margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:start;flex-wrap:wrap;gap:8px"><div><div style="font-size:16px;font-weight:700">${r.product_name}</div><div style="font-size:12px;color:var(--text-secondary);margin-top:2px">${[r.finish,r.thickness].filter(Boolean).join(' · ')}</div></div><div style="text-align:right"><div style="font-family:monospace;font-size:13px;color:var(--accent);font-weight:600">${r.sku}</div><div style="font-size:12px;margin-top:2px">${stockHtml}</div></div></div></div>
+        <div class="spec-grid" style="margin-bottom:12px">
+          <div class="spec-item"><div class="spec-lbl">Size</div><div class="spec-val">${r.size||'—'}</div></div>
+          <div class="spec-item"><div class="spec-lbl">Finish</div><div class="spec-val">${r.finish||'—'}</div></div>
+          <div class="spec-item"><div class="spec-lbl">Per Pallet</div><div class="spec-val">${r.no_per_pallet||'—'}</div></div>
+          <div class="spec-item"><div class="spec-lbl">Per m²</div><div class="spec-val">${r.no_per_m2||'—'}</div></div>
+          <div class="spec-item"><div class="spec-lbl">Per l/m</div><div class="spec-val">${r.no_per_lm||'—'}</div></div>
+          <div class="spec-item"><div class="spec-lbl">Wt/Piece</div><div class="spec-val">${r.__weightPiece?r.__weightPiece+' kg':'—'}</div></div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:end;flex-wrap:wrap;margin-bottom:12px">
+          <div><label class="form-label">Measurement</label><select class="form-select prod-measure" data-sec="${sec.id}" style="width:200px"><option value="m2"${sec.measure==='m2'?' selected':''}>Area (m²)</option><option value="lm"${sec.measure==='lm'?' selected':''}>Lineal Metres</option><option value="pieces"${sec.measure==='pieces'?' selected':''}>Direct Pieces</option></select></div>
+          <div><label class="form-label">Wastage %</label><div style="display:flex;align-items:center;gap:8px"><input type="range" class="prod-wastage" data-sec="${sec.id}" min="0" max="25" value="${sec.wastage}" style="width:120px;accent-color:var(--accent)"><span class="prod-wastage-val" style="font-weight:700;color:var(--accent);min-width:36px">${sec.wastage}%</span></div></div>
+        </div>
+        <div style="font-size:11px;color:var(--text-secondary);margin-bottom:12px;font-style:italic">${wastNote}</div>
+      `;
     }
 
-    /* === CALC MODE TOGGLE === */
-    let calcMode='product'; // 'dimensions' or 'product'
-
-    function setCalcMode(mode){
-      calcMode=mode;
-      document.querySelectorAll('.mode-btn').forEach((b,i)=>b.classList.toggle('active',i===(mode==='dimensions'?0:1)));
-      document.getElementById('dimMode').style.display=mode==='dimensions'?'':'none';
-      document.getElementById('prodMode').style.display=mode==='product'?'':'none';
-      updateInputSections();
-      clearResults();
+    let inputHtml='';
+    if(!hasProduct){
+      inputHtml='';// just the search
+    }else if(sec.measure==='m2'){
+      inputHtml=`<div class="card" style="padding:14px;margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><label class="form-label" style="margin-bottom:0">Areas</label><div style="display:flex;gap:6px" class="no-print"><button class="btn btn-primary btn-sm" onclick="addProdArea(${sec.id},'add')">+ Area</button><button class="btn btn-danger btn-sm" onclick="addProdArea(${sec.id},'sub')">− Cutout</button></div></div><div id="prodAreas-${sec.id}"></div></div>`;
+    }else if(sec.measure==='lm'){
+      inputHtml=`<div class="card" style="padding:14px;margin-bottom:12px"><label class="form-label">Total Lineal Metres</label><input type="number" class="form-input prod-lineal" data-sec="${sec.id}" placeholder="e.g. 24.5" min="0" step="0.01" value="${sec.linealVal}" style="max-width:250px"></div>`;
+    }else{
+      inputHtml=`<div class="card" style="padding:14px;margin-bottom:12px"><label class="form-label">Quantity (Pieces)</label><input type="number" class="form-input prod-pieces" data-sec="${sec.id}" placeholder="e.g. 100" min="0" step="1" value="${sec.piecesVal}" style="max-width:250px"></div>`;
     }
 
-    function updateInputSections(){
-      let showArea=false,showLineal=false,showPieces=false,showWastage=true;
-      if(calcMode==='dimensions'){
-        const ct=document.getElementById('calcType').value;
-        showArea=ct==='area';showLineal=ct==='lineal';
-      }else{
-        // Product mode
-        if(!selectedProduct){showArea=false;showLineal=false;showPieces=false;showWastage=false}
-        else{
-          const m=document.getElementById('prodMeasure').value;
-          showArea=m==='m2';showLineal=m==='lm';showPieces=m==='pieces';
-          showWastage=m!=='pieces';
-        }
+    // Results
+    let resultHtml='';
+    if(sec.result){const re=sec.result;
+      resultHtml=`<div class="prod-results"><div class="result-box"><div class="result-label">Net</div><div class="result-number">${re.netStr}</div></div><div class="result-box"><div class="result-label">+ Wastage</div><div class="result-number">${re.grossStr}</div></div><div class="result-box"><div class="result-label">Pieces</div><div class="result-number">${re.pieces.toLocaleString()}</div></div><div class="result-box"><div class="result-label">Pallets</div><div class="result-number">${re.pallets}</div></div><div class="result-box"><div class="result-label">Weight</div><div class="result-number">${re.weightStr}</div></div><div class="result-box"><div class="result-label">Stock</div><div class="result-number">${re.stockHtml}</div></div></div>`;
+    }
+
+    div.innerHTML=`
+      <div class="prod-section-header"><div class="prod-section-title">Product ${prodNum}</div>${prodSections.length>1?`<button class="prod-remove no-print" onclick="removeProductSection(${sec.id})">✕</button>`:''}</div>
+      <div class="card" style="padding:14px;margin-bottom:12px"><label class="form-label">Search Product</label><div class="lookup-search-wrap"><input type="text" class="form-input prod-search" data-sec="${sec.id}" placeholder="Start typing product name or SKU…" value="${hasProduct?sec.product.sku+' — '+sec.product.product_name:''}" autocomplete="off"><div class="lookup-dropdown" id="dd-${sec.id}"></div></div><div class="lookup-status" style="font-size:11px;color:var(--text-secondary);margin-top:4px">${specRows.length?specRows.length+' products loaded':'Loading…'}</div></div>
+      ${specHtml}${inputHtml}${resultHtml}`;
+    container.appendChild(div);
+
+    // Wire up events after DOM insertion
+    if(hasProduct){
+      // Area rows
+      if(sec.measure==='m2'){
+        const areaContainer=document.getElementById('prodAreas-'+sec.id);
+        if(areaContainer)renderAreaRows(sec.areas,'prodAreas-'+sec.id,(e)=>{handleGenericAreaInput(e,sec.areas);calcProdSection(sec.id)});
+        // Wire remove buttons
+        areaContainer?.querySelectorAll('[data-remove]').forEach(btn=>btn.addEventListener('click',()=>{const aid=parseInt(btn.dataset.remove);sec.areas=sec.areas.filter(a=>a.id!==aid);renderAllProducts();calcProdSection(sec.id)}));
       }
-      document.getElementById('areaSection').style.display=showArea?'':'none';
-      document.getElementById('linealSection').style.display=showLineal?'':'none';
-      document.getElementById('piecesSection').style.display=showPieces?'':'none';
-      document.getElementById('wastageCard').style.display=showWastage?'':'none';
+      // Measure change
+      div.querySelector('.prod-measure')?.addEventListener('change',e=>{sec.measure=e.target.value;renderAllProducts();calcProdSection(sec.id)});
+      // Wastage
+      div.querySelector('.prod-wastage')?.addEventListener('input',e=>{sec.wastage=parseInt(e.target.value);div.querySelector('.prod-wastage-val').textContent=sec.wastage+'%';calcProdSection(sec.id)});
+      // Lineal
+      div.querySelector('.prod-lineal')?.addEventListener('input',e=>{sec.linealVal=e.target.value;calcProdSection(sec.id)});
+      // Pieces
+      div.querySelector('.prod-pieces')?.addEventListener('input',e=>{sec.piecesVal=e.target.value;calcProdSection(sec.id)});
     }
 
-    function clearResults(){document.getElementById('calcResults').style.display='none'}
+    // Search
+    const searchInput=div.querySelector('.prod-search');
+    const dropdown=document.getElementById('dd-'+sec.id);
+    let hlIdx=-1;
 
-    function onCalcTypeChange(){updateInputSections();clearResults();
-      // Filter tile sizes for lineal
-      const m=document.getElementById('calcType').value;
-      const cs=['400x400','406x406','600x400','610x406','custom'];
-      document.querySelectorAll('#tileSize option').forEach(o=>{if(m==='lineal'){const ok=cs.includes(o.value);o.style.display=ok?'':'none';if(o.selected&&!ok)document.getElementById('tileSize').value='400x400'}else o.style.display=''});
-      document.querySelectorAll('#tileSize optgroup').forEach(og=>{og.style.display=[...og.querySelectorAll('option')].some(o=>o.style.display!=='none')?'':'none'});
-      onTileSizeChange();
-    }
-    function onTileSizeChange(){document.getElementById('customSizeRow').style.display=document.getElementById('tileSize').value==='custom'?'flex':'none';calcDimensions()}
-    function onWastageChange(){if(calcMode==='dimensions')calcDimensions();else calcProduct()}
-    function onMeasureInput(){if(calcMode==='dimensions')calcDimensions();else calcProduct()}
+    searchInput.addEventListener('input',()=>{
+      const q=searchInput.value.trim();if(q.length<2){dropdown.classList.remove('open');return}
+      const res=searchSpecs(q);dropdown.innerHTML='';hlIdx=-1;
+      if(!res.length){dropdown.classList.remove('open');return}
+      res.forEach(r=>{const d=document.createElement('div');d.className='lookup-option';d.innerHTML=`<span class="opt-sku">${r.sku}</span>${r.product_name} <span class="opt-size">${r.size||''}</span>`;d.addEventListener('click',()=>{selectProdForSection(sec.id,r);dropdown.classList.remove('open')});dropdown.appendChild(d)});
+      dropdown.classList.add('open');
+    });
+    searchInput.addEventListener('keydown',e=>{const opts=dropdown.querySelectorAll('.lookup-option');if(!opts.length)return;if(e.key==='ArrowDown'){e.preventDefault();hlIdx=Math.min(hlIdx+1,opts.length-1);opts.forEach((x,i)=>x.classList.toggle('highlighted',i===hlIdx))}else if(e.key==='ArrowUp'){e.preventDefault();hlIdx=Math.max(hlIdx-1,0);opts.forEach((x,i)=>x.classList.toggle('highlighted',i===hlIdx))}else if(e.key==='Enter'&&hlIdx>=0){e.preventDefault();opts[hlIdx].click()}else if(e.key==='Escape')dropdown.classList.remove('open')});
+  });
+  document.addEventListener('click',e=>{if(!e.target.closest('.lookup-search-wrap'))document.querySelectorAll('.lookup-dropdown').forEach(d=>d.classList.remove('open'))});
+}
 
-    /* === DIMENSION CALC === */
-    const TILE_SIZES={'100x100':[100,100],'200x50':[200,50],'200x100':[200,100],'400x400':[400,400],'406x406':[406,406],'600x400':[600,400],'610x406':[610,406],'600x600':[600,600],'french_metric':null,'french_imperial':null,'custom':null};
-    const FRENCH_RATES={'french_metric':1.389,'french_imperial':1.35};
-    function getTileDims(){const v=document.getElementById('tileSize').value;if(v==='custom'){const l=parseFloat(document.getElementById('customL').value),w=parseFloat(document.getElementById('customW').value);if(l>0&&w>0)return{type:'standard',dims:[l,w]};return null}if(FRENCH_RATES[v])return{type:'french',rate:FRENCH_RATES[v]};const d=TILE_SIZES[v];return d?{type:'standard',dims:d}:null}
+function selectProdForSection(secId,r){
+  const sec=prodSections.find(s=>s.id===secId);if(!sec)return;
+  sec.product=r;
+  // Set wastage from CSV if available
+  r.__csvWastage=r.__wastage>0?r.__wastage:0;
+  sec.wastage=r.__csvWastage>0?r.__csvWastage:10;
+  sec.result=null;
+  renderAllProducts();
+  calcProdSection(secId);
+}
 
-    let areas=[],areaCtr=0;
-    function addArea(type){areaCtr++;areas.push({id:areaCtr,type,label:'',length:'',width:'',directM2:''});renderAreas()}
-    function removeArea(id){areas=areas.filter(a=>a.id!==id);renderAreas();onMeasureInput()}
-    function renderAreas(){
-      const c=document.getElementById('areaRows');c.innerHTML='';
-      if(!areas.length){c.innerHTML='<div style="color:var(--text-secondary);font-size:13px;padding:12px 0">Click "+ Add Area" to get started.</div>';return}
-      for(const a of areas){const div=document.createElement('div');div.className='area-row';div.dataset.areaId=a.id;const hd=!!(a.length||a.width),hr=!!a.directM2;
-        div.innerHTML=`<div><span class="area-badge ${a.type}">${a.type==='add'?'+':'−'}</span></div><div><label class="form-label" style="font-size:10px">Label</label><input type="text" class="form-input" placeholder="e.g. Patio" value="${a.label||''}" data-field="label" data-id="${a.id}"></div><div class="${hr?'dim-faded':''}"><label class="form-label" style="font-size:10px">Length (m)</label><input type="number" class="form-input" placeholder="0.00" min="0" step="0.01" value="${a.length}" data-field="length" data-id="${a.id}"></div><div class="${hr?'dim-faded':''}"><label class="form-label" style="font-size:10px">Width (m)</label><input type="number" class="form-input" placeholder="0.00" min="0" step="0.01" value="${a.width}" data-field="width" data-id="${a.id}"></div><div class="or-divider">or</div><div class="${hd?'m2-faded':''}"><label class="form-label" style="font-size:10px">m²</label><input type="number" class="form-input" placeholder="0.00" min="0" step="0.01" value="${a.directM2||''}" data-field="directM2" data-id="${a.id}"></div><div class="no-print"><button class="remove-btn" onclick="removeArea(${a.id})" title="Remove"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>`;
-        div.addEventListener('input',handleAreaInput);c.appendChild(div)}
-    }
-    function handleAreaInput(e){const inp=e.target;if(!inp.dataset.field)return;const id=parseInt(inp.dataset.id),f=inp.dataset.field,v=inp.value,a=areas.find(x=>x.id===id);if(!a)return;a[f]=v;const row=inp.closest('.area-row');
-      if(f==='length'||f==='width'){if(a.length||a.width){if(a.directM2){a.directM2='';const m=row.querySelector('[data-field="directM2"]');if(m)m.value=''}}updateFade(row,a)}
-      else if(f==='directM2'){if(v&&(a.length||a.width)){a.length='';a.width='';const l=row.querySelector('[data-field="length"]'),w=row.querySelector('[data-field="width"]');if(l)l.value='';if(w)w.value=''}updateFade(row,a)}
-      onMeasureInput()}
-    function updateFade(row,a){const hd=!!(a.length||a.width),hr=!!a.directM2,c=row.children;c[2].className=hr?'dim-faded':'';c[3].className=hr?'dim-faded':'';c[5].className=hd?'m2-faded':''}
+function addProdArea(secId,type){
+  const sec=prodSections.find(s=>s.id===secId);if(!sec)return;
+  sec.areaCtr++;sec.areas.push({id:sec.areaCtr,type,label:'',length:'',width:'',directM2:''});
+  renderAllProducts();
+}
 
-    function getTotalArea(){let t=0;for(const a of areas){let m=0;const d=parseFloat(a.directM2)||0;if(d>0)m=d;else m=(parseFloat(a.length)||0)*(parseFloat(a.width)||0);if(a.type==='add')t+=m;else t-=m}return Math.max(0,t)}
-    function getWastage(){return parseInt(document.getElementById('wastageSlider').value)/100}
+function calcProdSection(secId){
+  const sec=prodSections.find(s=>s.id===secId);if(!sec||!sec.product)return;
+  const r=sec.product;
+  const w=sec.wastage/100;
+  const perM2=parseFloat(r.no_per_m2)||0;
+  const perLm=parseFloat(r.no_per_lm)||0;
+  const perPallet=parseFloat(r.no_per_pallet)||0;
 
-    function calcDimensions(){
-      const rd=document.getElementById('calcResults');const ct=document.getElementById('calcType').value;const tile=getTileDims();const w=getWastage();
-      // Hide product-specific result boxes
-      document.getElementById('resPalletsBox').style.display='none';document.getElementById('resWeightBox').style.display='none';document.getElementById('resStockBox').style.display='none';
-      if(!tile){rd.style.display='none';return}
-      let nv=0,u='',nq=0,ul='';
-      if(ct==='area'){u='m²';nv=getTotalArea();if(nv===0){rd.style.display='none';return}const gv=nv*(1+w);document.getElementById('resNetVal').textContent=nv.toFixed(2)+' '+u;document.getElementById('resGrossVal').textContent=gv.toFixed(2)+' '+u;if(tile.type==='french'){nq=Math.ceil(gv*tile.rate);ul='Sets Required'}else{nq=Math.ceil(gv/((tile.dims[0]/1000)*(tile.dims[1]/1000)));ul='Pieces Required'}}
-      else{u='lm';nv=parseFloat(document.getElementById('linealInput').value)||0;if(nv===0){rd.style.display='none';return}const gv=nv*(1+w);document.getElementById('resNetVal').textContent=nv.toFixed(2)+' '+u;document.getElementById('resGrossVal').textContent=gv.toFixed(2)+' '+u;nq=Math.ceil(gv/(Math.max(tile.dims[0],tile.dims[1])/1000));ul='Pieces Required'}
-      document.getElementById('resPiecesLabel').textContent=ul;document.getElementById('resPiecesVal').textContent=nq.toLocaleString();rd.style.display='';
-    }
+  let nv=0,u='',pieces=0,netStr='—',grossStr='—';
 
-    /* === PRODUCT CALC === */
-    function calcProduct(){
-      if(!selectedProduct)return;
-      const r=selectedProduct;const rd=document.getElementById('calcResults');
-      const measure=document.getElementById('prodMeasure').value;
-      const w=getWastage();
-      const perM2=parseFloat(r.no_per_m2)||0;
-      const perLm=parseFloat(r.no_per_lm)||0;
-      const perPallet=parseFloat(r.no_per_pallet)||0;
-      const weightPiece=parseFloat(r.weight_per_piece_kg||r.weight_per_pallet_kg)||0;
+  if(sec.measure==='m2'){
+    u='m²';nv=calcAreaTotal(sec.areas);if(nv===0){sec.result=null;renderAllProducts();updateSummary();return}
+    const gv=nv*(1+w);netStr=nv.toFixed(2)+' m²';grossStr=gv.toFixed(2)+' m²';
+    if(perM2>0)pieces=Math.ceil(gv*perM2);else{sec.result=null;renderAllProducts();updateSummary();return}
+  }else if(sec.measure==='lm'){
+    u='lm';nv=parseFloat(sec.linealVal)||0;if(nv===0){sec.result=null;renderAllProducts();updateSummary();return}
+    const gv=nv*(1+w);netStr=nv.toFixed(2)+' lm';grossStr=gv.toFixed(2)+' lm';
+    if(perLm>0)pieces=Math.ceil(gv*perLm);else if(perM2>0)pieces=Math.ceil(gv*perM2);else{sec.result=null;renderAllProducts();updateSummary();return}
+  }else{
+    pieces=Math.ceil(parseFloat(sec.piecesVal)||0);if(!pieces){sec.result=null;renderAllProducts();updateSummary();return}
+    netStr=perM2>0?(pieces/perM2).toFixed(2)+' m²':'—';grossStr='—';
+  }
 
-      let nv=0,u='',pieces=0;
+  const pallets=perPallet>0?(pieces/perPallet):0;
+  const totalWt=pieces*r.__weightPiece;
+  const wtStr=totalWt>0?(totalWt>=1000?(totalWt/1000).toFixed(2)+' t':totalWt.toFixed(0)+' kg'):'—';
+  const st=getStock(r.sku);
+  let stockHtml='—';
+  if(st&&Number.isFinite(st.qty)){const ok=st.qty>=pieces;stockHtml=`<span style="color:${ok?'#2e7d32':'#c0392b'}">${st.qty.toLocaleString()}</span>`}
 
-      if(measure==='m2'){
-        u='m²';nv=getTotalArea();if(nv===0){rd.style.display='none';return}
-        const gv=nv*(1+w);
-        document.getElementById('resNetVal').textContent=nv.toFixed(2)+' '+u;
-        document.getElementById('resGrossVal').textContent=gv.toFixed(2)+' '+u;
-        if(perM2>0)pieces=Math.ceil(gv*perM2);else{rd.style.display='none';return}
-      }else if(measure==='lm'){
-        u='lm';nv=parseFloat(document.getElementById('linealInput').value)||0;if(nv===0){rd.style.display='none';return}
-        const gv=nv*(1+w);
-        document.getElementById('resNetVal').textContent=nv.toFixed(2)+' '+u;
-        document.getElementById('resGrossVal').textContent=gv.toFixed(2)+' '+u;
-        if(perLm>0)pieces=Math.ceil(gv*perLm);
-        else if(perM2>0){/* fallback: use per_m2 to estimate from lineal — but need tile width. Use perM2 as rough guide */pieces=Math.ceil(gv*perM2);/* not ideal */}
-        else{rd.style.display='none';return}
-      }else{
-        // Direct pieces
-        pieces=Math.ceil(parseFloat(document.getElementById('piecesInput').value)||0);if(pieces===0){rd.style.display='none';return}
-        const covM2=perM2>0?(pieces/perM2):0;
-        document.getElementById('resNetVal').textContent=covM2>0?covM2.toFixed(2)+' m²':'—';
-        document.getElementById('resGrossVal').textContent='—';
-      }
+  sec.result={pieces,pallets:pallets>0?pallets.toFixed(1):'—',weightStr:wtStr,weight:totalWt,netStr,grossStr,stockHtml};
+  renderAllProducts();
+  updateSummary();
+}
 
-      document.getElementById('resPiecesLabel').textContent='Pieces Required';
-      document.getElementById('resPiecesVal').textContent=pieces.toLocaleString();
+function updateSummary(){
+  const results=prodSections.filter(s=>s.result).map(s=>s.result);
+  const box=document.getElementById('combinedSummary');
+  if(results.length<2){box.style.display='none';return}
+  const totalPcs=results.reduce((a,r)=>a+r.pieces,0);
+  const totalPallets=results.reduce((a,r)=>a+(parseFloat(r.pallets)||0),0);
+  const totalWt=results.reduce((a,r)=>a+(r.weight||0),0);
+  document.getElementById('sumPieces').textContent=totalPcs.toLocaleString();
+  document.getElementById('sumPallets').textContent=totalPallets.toFixed(1);
+  document.getElementById('sumWeight').textContent=totalWt>0?(totalWt>=1000?(totalWt/1000).toFixed(2)+' t':totalWt.toFixed(0)+' kg'):'—';
+  box.style.display='';
+}
 
-      // Pallets
-      const pallets=perPallet>0?(pieces/perPallet):0;
-      document.getElementById('resPallets').textContent=pallets>0?pallets.toFixed(1):'—';
-      document.getElementById('resPalletsBox').style.display='';
-
-      // Weight
-      const totalWeight=pieces*weightPiece;
-      document.getElementById('resWeight').textContent=totalWeight>0?(totalWeight>=1000?(totalWeight/1000).toFixed(2)+' t':totalWeight.toFixed(0)+' kg'):'—';
-      document.getElementById('resWeightBox').style.display='';
-
-      // Stock
-      const st=getStockForSku(r.sku);
-      if(st&&Number.isFinite(st.qty)){const enough=st.qty>=pieces;document.getElementById('resStock').innerHTML=`<span style="color:${enough?'#2e7d32':'#c0392b'}">${st.qty.toLocaleString()}</span>`}
-      else document.getElementById('resStock').textContent='—';
-      document.getElementById('resStockBox').style.display='';
-
-      rd.style.display='';
-    }
-
-    document.getElementById('prodMeasure').addEventListener('change',()=>{updateInputSections();clearResults()});
-    document.getElementById('customL').addEventListener('input',calcDimensions);
-    document.getElementById('customW').addEventListener('input',calcDimensions);
-
-    addArea('add');
-    updateInputSections();
-    loadStock();
-    loadSpecs();
-  </script>
+// Init with one product section
+addProductSection();
+loadStock();
+loadSpecs();
+</script>
 </body>
 </html>
